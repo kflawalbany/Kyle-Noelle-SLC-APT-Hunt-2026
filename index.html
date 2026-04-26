@@ -1509,7 +1509,7 @@ function toggleSound() {
   soundOn = !soundOn;
   const btn = document.getElementById('sound-btn');
   btn.classList.toggle('active', soundOn);
-  if (soundOn) { resumeAC(); startAmbient(); showToast('🔊 Sounds on!'); }
+  if (soundOn) { AC.resume().then(() => { startAmbient(); showToast('🎵 Sounds on!'); }); }
   else          { stopAmbient();             showToast('🔇 Sounds off'); }
 }
 
@@ -1970,6 +1970,10 @@ spawnSparkles();
 document.getElementById('sound-btn').classList.add('active');
 function unlockAudio() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  // iOS requires a silent buffer played synchronously inside the gesture handler
+  const buf = AC.createBuffer(1, 1, 22050);
+  const src = AC.createBufferSource();
+  src.buffer = buf; src.connect(AC.destination); src.start(0);
   AC.resume().then(() => {
     if (soundOn && !vapTick) { startAmbient(); showToast('🎵 Music on!'); }
   });
