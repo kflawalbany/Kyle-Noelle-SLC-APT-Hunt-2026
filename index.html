@@ -1969,7 +1969,10 @@ spawnSparkles();
 // Unlock audio on first interaction
 document.getElementById('sound-btn').classList.add('active');
 function unlockAudio() {
-  if (!AC) { initAC(); if (soundOn) { resumeAC(); startAmbient(); } }
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  AC.resume().then(() => {
+    if (soundOn && !vapTick) { startAmbient(); showToast('🎵 Music on!'); }
+  });
 }
 document.addEventListener('click',      unlockAudio, { once: true });
 document.addEventListener('touchstart', unlockAudio, { once: true });
