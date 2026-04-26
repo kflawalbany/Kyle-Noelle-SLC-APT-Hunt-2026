@@ -1968,9 +1968,11 @@ spawnSparkles();
 
 // Unlock audio on first interaction
 document.getElementById('sound-btn').classList.add('active');
-document.addEventListener('click', () => {
+function unlockAudio() {
   if (!AC) { initAC(); if (soundOn) { resumeAC(); startAmbient(); } }
-}, { once: true });
+}
+document.addEventListener('click',      unlockAudio, { once: true });
+document.addEventListener('touchstart', unlockAudio, { once: true });
 </script>
 </body>
 </html>
