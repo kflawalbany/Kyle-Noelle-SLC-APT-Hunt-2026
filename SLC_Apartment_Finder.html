@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 Kyle & Noelle — SLC Apartment Hunt</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --aqua:     #00b4d8;
+  --aqua-d:   #0077b6;
+  --aqua-l:   #90e0ef;
+  --sky:      #caf0f8;
+  --glass-bg: rgba(220,240,255,0.55);
+  --glass-bd: rgba(255,255,255,0.85);
+  --glass-sh: 0 8px 32px rgba(0,120,200,0.13), inset 0 1px 0 rgba(255,255,255,0.9);
+  --love: #f43f8e; --love-l: #fce7f3;
+  --like: #2196f3; --like-l: #e3f2fd;
+  --meh:  #f59e0b; --meh-l:  #fef3c7;
+  --pass: #94a3b8; --pass-l: #f1f5f9;
+  --text: #0c2d48; --sub: #5b8fa8;
+  --r: 18px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', -apple-system, sans-serif;
+  background: linear-gradient(160deg, #7dd4f8 0%, #aee8ff 40%, #90dbff 75%, #b2e8ff 100%);
+  min-height: 100vh; color: var(--text);
+}
+
+/* ── Floating orbs ── */
+.bg-scene { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; filter: blur(70px); }
+.orb1 { width:480px; height:480px; top:-140px; right:-100px;
+        background: radial-gradient(circle, rgba(125,211,252,.7), rgba(186,230,253,.3));
+        animation: float 9s ease-in-out infinite; }
+.orb2 { width:340px; height:340px; bottom:5%; left:-90px;
+        background: radial-gradient(circle, rgba(134,239,172,.6), rgba(187,247,208,.2));
+        animation: float 12s ease-in-out infinite reverse 1s; }
+.orb3 { width:260px; height:260px; top:38%; right:5%;
+        background: radial-gradient(circle, rgba(196,181,253,.5), rgba(221,214,254,.2));
+        animation: float 10s ease-in-out infinite 3s; }
+.orb4 { width:180px; height:180px; bottom:30%; right:35%;
+        background: radial-gradient(circle, rgba(125,211,252,.4), transparent);
+        animation: float 7s ease-in-out infinite 0.5s; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-22px)} }
+
+/* ── All panels above orbs ── */
+.header,.tabs,.view,.modal-overlay { position: relative; z-index: 1; }
+
+/* ── Header ── */
+.header {
+  background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1.5px solid var(--glass-bd);
+  box-shadow: 0 2px 20px rgba(0,120,200,0.08);
+  padding: 11px 18px; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header h1 { font-size: 1.05rem; font-weight: 900; white-space: nowrap; line-height:1.1;
+              background: linear-gradient(135deg, #0077b6, #0ea5e9, #6366f1);
+              -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.header-text { display:flex; flex-direction:column; justify-content:center; }
+.header-sub  { font-size:0.60rem; color:var(--sub); font-weight:700; letter-spacing:.04em; margin-top:2px; }
+/* SVG icon alignment inside buttons/tabs */
+.tab, .score-tab { display:flex; align-items:center; justify-content:center; gap:5px; }
+.sound-btn, .clear-btn { display:flex; align-items:center; justify-content:center; }
+.sound-btn .snd-on  { display:none; }
+.sound-btn.active .snd-on  { display:flex; align-items:center; }
+.sound-btn.active .snd-off { display:none; }
+.jump-btn { display:flex; align-items:center; justify-content:center; gap:6px; font-family:inherit; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+/* User pills */
+.user-pills { display: flex; gap: 6px; }
+.user-pill {
+  padding: 5px 15px; border-radius: 999px; font-size: 0.82rem; font-weight: 800;
+  cursor: pointer; border: 1.5px solid rgba(255,255,255,.8); color: var(--sub);
+  background: rgba(255,255,255,.6); backdrop-filter: blur(8px);
+  box-shadow: 0 1px 4px rgba(0,0,0,.07), inset 0 1px 0 rgba(255,255,255,.9);
+  transition: all .15s; position: relative; overflow: hidden;
+}
+.user-pill::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background: linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,.1)); pointer-events:none; border-radius:999px 999px 0 0; }
+.user-pill:hover { transform: translateY(-1px); }
+.user-pill.active-kyle   { background: linear-gradient(160deg,#60a5fa,#3b82f6); color:#fff; border-color:rgba(255,255,255,.7);
+  box-shadow: 0 2px 12px rgba(59,130,246,.4), inset 0 1px 0 rgba(255,255,255,.5); }
+.user-pill.active-noelle { background: linear-gradient(160deg,#f472b6,#ec4899); color:#fff; border-color:rgba(255,255,255,.7);
+  box-shadow: 0 2px 12px rgba(236,72,153,.4), inset 0 1px 0 rgba(255,255,255,.5); }
+
+/* Clear button */
+.clear-btn {
+  width:32px; height:32px; border-radius:50%; border:1.5px solid rgba(255,255,255,.8);
+  background: rgba(255,255,255,.6); backdrop-filter: blur(8px); cursor:pointer; font-size:.9rem;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.9);
+  transition: all .15s; position:relative; overflow:hidden;
+  color: var(--sub);
+}
+.clear-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,.1)); pointer-events:none; }
+.clear-btn:hover { transform:scale(1.1); background:rgba(255,255,255,.85); }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; position: sticky; top: 55px; z-index: 99;
+  background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1.5px solid var(--glass-bd);
+  box-shadow: 0 2px 12px rgba(0,120,200,0.06);
+}
+.tab {
+  flex: 1; padding: 10px 0; text-align: center; font-size: 0.8rem; font-weight: 800;
+  cursor: pointer; color: var(--sub); border-bottom: 3px solid transparent;
+  transition: all .15s; letter-spacing: .01em;
+}
+.tab.active { color: var(--aqua-d); border-bottom-color: var(--aqua); }
+
+/* ── Views ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ══════════ RATE VIEW ══════════ */
+#view-rate { padding: 14px; max-width: 500px; margin: 0 auto; }
+
+.rate-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.progress-bar {
+  flex:1; height:8px; border-radius:99px; overflow:hidden;
+  background:rgba(255,255,255,.5); border:1px solid rgba(255,255,255,.7);
+  box-shadow: inset 0 1px 3px rgba(0,100,200,.1);
+}
+.progress-fill {
+  height:100%; border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(90deg, #38bdf8, #818cf8, #f472b6);
+  box-shadow: 0 0 8px rgba(56,189,248,.5);
+}
+.progress-text { font-size:0.72rem; color:var(--sub); white-space:nowrap; font-weight:700; }
+
+/* Card */
+.apt-card {
+  background: rgba(255,255,255,.78); backdrop-filter: blur(24px); -webkit-backdrop-filter:blur(24px);
+  border-radius: 24px; overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,.95);
+  box-shadow: 0 10px 40px rgba(0,120,200,.16), 0 2px 8px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.95);
+  transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
+}
+.apt-card.slide-out-left  { transform: translateX(-130%) rotate(-10deg); opacity:0; }
+.apt-card.slide-out-right { transform: translateX(130%)  rotate(10deg);  opacity:0; }
+
+.card-hero {
+  padding: 26px 22px 20px; position: relative; min-height: 148px;
+  display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
+}
+/* Gloss highlight on hero */
+.card-hero::after {
+  content:''; position:absolute; top:0;left:0;right:0; height:55%;
+  background: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.06) 100%);
+  pointer-events:none;
+}
+/* Shine streak */
+.card-hero::before {
+  content:''; position:absolute; top:-10%; left:-20%; width:60%; height:70%;
+  background: linear-gradient(125deg, rgba(255,255,255,.25) 0%, transparent 60%);
+  pointer-events:none; border-radius: 50%;
+}
+.card-num { position:absolute; top:13px; right:15px; font-size:.68rem;
+             color:rgba(255,255,255,.75); font-weight:800; letter-spacing:.05em; z-index:1; }
+.card-name { font-size:1.48rem; font-weight:900; color:#fff; line-height:1.15;
+              margin-bottom:7px; text-shadow:0 2px 8px rgba(0,0,0,.2); position:relative; z-index:1; }
+.card-meta { display:flex; gap:8px; flex-wrap:wrap; position:relative; z-index:1; }
+
+.badge {
+  display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px;
+  font-size:.7rem; font-weight:800; backdrop-filter:blur(4px); letter-spacing:.01em;
+  border: 1px solid rgba(255,255,255,.35); position:relative; overflow:hidden;
+}
+.badge::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.35),transparent); pointer-events:none; }
+.badge-price { background:rgba(255,255,255,.25); color:#fff; }
+.badge-dist  { background:rgba(0,0,0,.2); color:#fff; }
+.badge-over  { background:rgba(255,50,50,.5); color:#fff; }
+
+.card-body { padding:16px 20px 4px; }
+.card-address {
+  font-size:.78rem; color:var(--sub); margin-bottom:11px;
+  display:flex; align-items:flex-start; gap:4px; line-height:1.4; font-weight:600;
+}
+.amenity-row { display:flex; gap:6px; margin-bottom:11px; flex-wrap:wrap; }
+.amen-badge {
+  padding:4px 10px; border-radius:999px; font-size:.72rem; font-weight:800;
+  position:relative; overflow:hidden; border:1px solid transparent;
+}
+.amen-badge::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.45),transparent); pointer-events:none; }
+.amen-yes { background:linear-gradient(160deg,#86efac,#4ade80); color:#14532d; border-color:rgba(255,255,255,.5);
+            box-shadow:0 1px 4px rgba(74,222,128,.3); }
+.amen-no  { background:linear-gradient(160deg,#fca5a5,#f87171); color:#7f1d1d; border-color:rgba(255,255,255,.5);
+            box-shadow:0 1px 4px rgba(248,113,113,.3); }
+.amen-unk { background:rgba(255,255,255,.5); color:var(--sub); border-color:rgba(255,255,255,.7); }
+
+.card-amenities { font-size:.8rem; color:var(--sub); margin-bottom:10px; line-height:1.55; font-weight:600; }
+.card-note { font-size:.75rem; color:#92400e; background:rgba(254,243,199,.85); padding:6px 11px;
+              border-radius:10px; margin-bottom:10px; border:1px solid rgba(251,191,36,.3);
+              font-weight:700; backdrop-filter:blur(4px); }
+.card-website {
+  display:inline-flex; align-items:center; gap:5px; color:var(--aqua-d); font-size:.78rem;
+  font-weight:800; text-decoration:none; padding:5px 12px;
+  background:linear-gradient(160deg,rgba(186,230,253,.6),rgba(147,210,240,.4));
+  border-radius:999px; border:1px solid rgba(255,255,255,.8); margin-bottom:6px;
+  box-shadow:0 1px 4px rgba(0,120,200,.1), inset 0 1px 0 rgba(255,255,255,.7);
+  position:relative; overflow:hidden; transition:all .12s;
+}
+.card-website::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.4),transparent); pointer-events:none; }
+.card-website:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,120,200,.2); }
+
+.existing-rating { display:flex; align-items:center; gap:7px; margin:8px 0 2px; }
+.existing-label { font-size:.7rem; color:var(--sub); font-weight:700; }
+.existing-chip {
+  padding:2px 10px; border-radius:999px; font-size:.7rem; font-weight:800;
+  position:relative; overflow:hidden;
+}
+.existing-chip::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.4),transparent); pointer-events:none; }
+.chip-4 { background:linear-gradient(135deg,#f9a8d4,#f472b6); color:#fff; box-shadow:0 1px 4px rgba(244,114,182,.3); }
+.chip-3 { background:linear-gradient(135deg,#93c5fd,#60a5fa); color:#fff; box-shadow:0 1px 4px rgba(96,165,250,.3); }
+.chip-2 { background:linear-gradient(135deg,#fcd34d,#fbbf24); color:#78350f; box-shadow:0 1px 4px rgba(251,191,36,.3); }
+.chip-1 { background:linear-gradient(135deg,#e2e8f0,#cbd5e1); color:#475569; }
+
+/* Rating buttons */
+.rate-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:14px 18px 16px; }
+.rate-btn {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:10px 4px; border-radius:14px; cursor:pointer; transition:all .15s;
+  font-size:.71rem; font-weight:800; position:relative; overflow:hidden;
+  border: 1.5px solid rgba(255,255,255,.8);
+  box-shadow: 0 2px 6px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.rate-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.1)); pointer-events:none; border-radius:13px 13px 0 0; }
+.rate-btn:hover { transform:translateY(-3px) scale(1.04); }
+.rate-btn .icon { font-size:1.35rem; position:relative; z-index:1; }
+.rate-btn span:last-child { position:relative; z-index:1; }
+
+.rate-btn-pass { background:linear-gradient(160deg,#e2e8f0,#cbd5e1); color:#475569; }
+.rate-btn-pass:hover,.rate-btn-pass.active  { background:linear-gradient(160deg,#d1d5db,#9ca3af); color:#1f2937; box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.rate-btn-meh  { background:linear-gradient(160deg,#fde68a,#fbbf24); color:#78350f; }
+.rate-btn-meh:hover,.rate-btn-meh.active    { background:linear-gradient(160deg,#fcd34d,#f59e0b); box-shadow:0 4px 12px rgba(251,191,36,.35); }
+.rate-btn-like { background:linear-gradient(160deg,#93c5fd,#3b82f6); color:#fff; }
+.rate-btn-like:hover,.rate-btn-like.active  { background:linear-gradient(160deg,#60a5fa,#2563eb); box-shadow:0 4px 12px rgba(59,130,246,.4); }
+.rate-btn-love { background:linear-gradient(160deg,#f9a8d4,#ec4899); color:#fff; }
+.rate-btn-love:hover,.rate-btn-love.active  { background:linear-gradient(160deg,#f472b6,#db2777); box-shadow:0 4px 12px rgba(236,72,153,.4); }
+
+.card-nav { display:flex; align-items:center; justify-content:space-between; padding:8px 0 0; }
+.nav-btn {
+  padding:6px 16px; border-radius:999px; font-size:.78rem; font-weight:800; cursor:pointer;
+  background:rgba(255,255,255,.65); backdrop-filter:blur(8px); color:var(--sub);
+  border:1.5px solid rgba(255,255,255,.85); transition:all .12s;
+  box-shadow:0 1px 4px rgba(0,0,0,.07), inset 0 1px 0 rgba(255,255,255,.9);
+  position:relative; overflow:hidden;
+}
+.nav-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.5),transparent); pointer-events:none; }
+.nav-btn:hover { transform:translateY(-1px); background:rgba(255,255,255,.85); }
+.card-counter { font-size:.76rem; color:var(--sub); font-weight:800; }
+
+.jump-btn {
+  display:block; width:100%; max-width:300px; margin:10px auto 0;
+  padding:9px; border-radius:999px; font-size:.8rem; font-weight:800; cursor:pointer;
+  background:linear-gradient(135deg, #38bdf8, #818cf8);
+  color:#fff; border:1.5px solid rgba(255,255,255,.6);
+  box-shadow:0 3px 12px rgba(56,189,248,.35), inset 0 1px 0 rgba(255,255,255,.4);
+  position:relative; overflow:hidden; transition:all .15s; text-align:center;
+}
+.jump-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.35),transparent); pointer-events:none; }
+.jump-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(56,189,248,.45); }
+
+/* ══════════ SCORES VIEW ══════════ */
+#view-scores { padding: 14px; max-width: 680px; margin: 0 auto; }
+
+.score-tabs {
+  display:flex; gap:6px; padding:5px;
+  background:rgba(255,255,255,.55); backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,255,255,.85); border-radius:16px;
+  box-shadow:var(--glass-sh); margin-bottom:14px;
+}
+.score-tab {
+  flex:1; padding:8px; text-align:center; border-radius:11px; cursor:pointer;
+  font-size:.8rem; font-weight:800; color:var(--sub); transition:all .15s;
+}
+.score-tab.active {
+  background:linear-gradient(135deg,#38bdf8,#818cf8); color:#fff;
+  box-shadow:0 2px 10px rgba(56,189,248,.35), inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+.glass-box {
+  background:rgba(255,255,255,.62); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border-radius:var(--r); border:1.5px solid rgba(255,255,255,.9);
+  box-shadow:var(--glass-sh); padding:16px; margin-bottom:12px;
+}
+.glass-box h3 { font-size:.88rem; font-weight:900; color:var(--text); margin-bottom:10px; }
+
+.match-list { display:flex; flex-wrap:wrap; gap:7px; }
+.match-chip {
+  padding:4px 13px; border-radius:999px; font-size:.76rem; font-weight:800; cursor:pointer;
+  position:relative; overflow:hidden; border:1.5px solid transparent; transition:transform .12s;
+}
+.match-chip::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.4),transparent); pointer-events:none; }
+.match-chip:hover { transform:translateY(-1px); }
+.match-both-love { background:linear-gradient(135deg,#f9a8d4,#f472b6); color:#fff; box-shadow:0 2px 8px rgba(244,114,182,.3); }
+.match-both-like { background:linear-gradient(135deg,#93c5fd,#60a5fa); color:#fff; box-shadow:0 2px 8px rgba(96,165,250,.3); }
+
+.chart-container { background:rgba(255,255,255,.62); backdrop-filter:blur(20px);
+  border-radius:var(--r); border:1.5px solid rgba(255,255,255,.9); box-shadow:var(--glass-sh);
+  padding:16px; margin-bottom:12px; }
+.chart-container h3 { font-size:.88rem; font-weight:900; margin-bottom:12px; }
+
+.rank-list { background:rgba(255,255,255,.62); backdrop-filter:blur(20px);
+  border-radius:var(--r); border:1.5px solid rgba(255,255,255,.9); box-shadow:var(--glass-sh); overflow:hidden; }
+.rank-list h3 { font-size:.88rem; font-weight:900; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.7); }
+.rank-item { display:flex; align-items:center; gap:10px; padding:9px 14px;
+  border-bottom:1px solid rgba(255,255,255,.5); cursor:pointer; transition:background .1s; }
+.rank-item:last-child { border-bottom:none; }
+.rank-item:hover { background:rgba(255,255,255,.4); }
+.rank-num { font-size:1.05rem; font-weight:900; color:var(--sub); min-width:26px; text-align:center; }
+.rank-num.gold   { color:#f59e0b; }
+.rank-num.silver { color:#94a3b8; }
+.rank-num.bronze { color:#d97706; }
+.rank-info { flex:1; }
+.rank-name   { font-weight:800; font-size:.86rem; }
+.rank-detail { font-size:.7rem; color:var(--sub); margin-top:1px; font-weight:600; }
+.rank-score  { display:flex; gap:5px; align-items:center; }
+.score-dot { width:27px; height:27px; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:.68rem; font-weight:800; position:relative; overflow:hidden;
+  border:1px solid rgba(255,255,255,.6); box-shadow:0 1px 3px rgba(0,0,0,.1); }
+.score-dot::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.4),transparent); pointer-events:none; }
+.score-dot.s4 { background:linear-gradient(135deg,#f9a8d4,#f472b6); color:#fff; }
+.score-dot.s3 { background:linear-gradient(135deg,#93c5fd,#60a5fa); color:#fff; }
+.score-dot.s2 { background:linear-gradient(135deg,#fde68a,#fbbf24); color:#78350f; }
+.score-dot.s1 { background:linear-gradient(135deg,#e2e8f0,#94a3b8); color:#475569; }
+.score-dot.s0 { background:rgba(255,255,255,.4); color:rgba(148,163,184,.5); }
+.combined-bar { height:7px; border-radius:4px; background:rgba(255,255,255,.4); overflow:hidden; min-width:55px; border:1px solid rgba(255,255,255,.6); }
+.combined-fill { height:100%; border-radius:4px; transition:width .5s cubic-bezier(.4,0,.2,1);
+  background:linear-gradient(90deg,#38bdf8,#818cf8,#f472b6); }
+
+/* ══════════ BROWSE VIEW ══════════ */
+#view-browse { padding: 14px; max-width: 900px; margin: 0 auto; }
+.filter-bar { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:13px; align-items:center; }
+.filter-chip {
+  padding:5px 13px; border-radius:999px; font-size:.74rem; font-weight:800; cursor:pointer;
+  background:rgba(255,255,255,.6); color:var(--sub); backdrop-filter:blur(8px);
+  border:1.5px solid rgba(255,255,255,.85); transition:all .12s; white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,.07), inset 0 1px 0 rgba(255,255,255,.8);
+  position:relative; overflow:hidden;
+}
+.filter-chip::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.5),transparent); pointer-events:none; }
+.filter-chip:hover { transform:translateY(-1px); }
+.filter-chip.active { background:linear-gradient(135deg,#38bdf8,#0ea5e9); color:#fff;
+  border-color:rgba(255,255,255,.7); box-shadow:0 2px 10px rgba(14,165,233,.3); }
+
+.sort-select {
+  padding:6px 11px; border-radius:999px; font-size:.76rem; font-weight:800; cursor:pointer;
+  background:rgba(255,255,255,.65); backdrop-filter:blur(8px); color:var(--text);
+  border:1.5px solid rgba(255,255,255,.85); margin-left:auto;
+  box-shadow:0 1px 4px rgba(0,0,0,.07); font-family:inherit;
+}
+
+.browse-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(265px,1fr)); gap:11px; }
+.browse-card {
+  background:rgba(255,255,255,.68); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border-radius:20px; overflow:hidden; border:1.5px solid rgba(255,255,255,.92);
+  box-shadow:0 4px 20px rgba(0,120,200,.1), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:transform .14s, box-shadow .14s; cursor:pointer;
+}
+.browse-card:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,120,200,.18); }
+.browse-hero { padding:14px 15px 12px; min-height:82px; display:flex;
+  flex-direction:column; justify-content:flex-end; overflow:hidden; position:relative; }
+.browse-hero::after { content:''; position:absolute; top:0;left:0;right:0;height:55%;
+  background:linear-gradient(rgba(255,255,255,.22),transparent); pointer-events:none; }
+.browse-hero::before { content:''; position:absolute; top:-5%;left:-10%;width:60%;height:80%;
+  background:linear-gradient(125deg,rgba(255,255,255,.2),transparent); pointer-events:none; border-radius:50%; }
+.browse-name { font-weight:900; font-size:.9rem; color:#fff; line-height:1.2;
+  text-shadow:0 1px 4px rgba(0,0,0,.2); position:relative; z-index:1; }
+.browse-sub  { font-size:.7rem; color:rgba(255,255,255,.85); margin-top:2px; font-weight:700; position:relative; z-index:1; }
+.browse-body { padding:10px 13px 12px; }
+.mini-amens  { display:flex; gap:5px; margin-bottom:6px; }
+.mini-amen   { font-size:.66rem; font-weight:800; padding:2px 8px; border-radius:999px; position:relative; overflow:hidden; border:1px solid transparent; }
+.mini-amen::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.4),transparent); pointer-events:none; }
+.mini-amen.amen-yes { background:linear-gradient(135deg,#86efac,#4ade80); color:#14532d; box-shadow:0 1px 3px rgba(74,222,128,.2); }
+.mini-amen.amen-no  { background:linear-gradient(135deg,#fca5a5,#f87171); color:#7f1d1d; box-shadow:0 1px 3px rgba(248,113,113,.2); }
+.mini-amen.amen-unk { background:rgba(255,255,255,.5); color:var(--sub); }
+.browse-commute { font-size:.72rem; margin-bottom:6px; font-weight:700; }
+.browse-amenities { font-size:.71rem; color:var(--sub); line-height:1.4; margin-bottom:7px; font-weight:600; }
+.browse-rating-row { display:flex; gap:5px; align-items:center; }
+.mini-rate-btn {
+  flex:1; padding:5px 0; border-radius:999px; border:1.5px solid rgba(255,255,255,.8);
+  background:rgba(255,255,255,.55); font-size:.68rem; cursor:pointer; text-align:center;
+  font-weight:800; color:var(--sub); transition:all .1s; position:relative; overflow:hidden;
+  font-family:inherit;
+}
+.mini-rate-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.5),transparent); pointer-events:none; }
+.mini-rate-btn:hover { transform:scale(1.06); }
+.mini-rate-btn.r4 { background:linear-gradient(135deg,#f9a8d4,#f472b6); color:#fff; border-color:rgba(255,255,255,.7); }
+.mini-rate-btn.r3 { background:linear-gradient(135deg,#93c5fd,#60a5fa); color:#fff; border-color:rgba(255,255,255,.7); }
+.mini-rate-btn.r2 { background:linear-gradient(135deg,#fde68a,#fbbf24); color:#78350f; border-color:rgba(255,255,255,.7); }
+.mini-rate-btn.r1 { background:linear-gradient(135deg,#e2e8f0,#94a3b8); color:#374151; border-color:rgba(255,255,255,.7); }
+.link-mini {
+  flex:1; text-align:center; padding:5px 0; border-radius:999px;
+  border:1.5px solid rgba(255,255,255,.8); background:rgba(186,230,253,.5);
+  font-size:.68rem; font-weight:800; color:var(--aqua-d); text-decoration:none; display:block;
+  position:relative; overflow:hidden;
+}
+.link-mini::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.5),transparent); pointer-events:none; }
+
+/* ══════════ MODAL ══════════ */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(10,40,80,.35); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:rgba(240,250,255,.92); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
+  border-radius:24px; padding:24px; width:100%; max-width:340px;
+  border:1.5px solid rgba(255,255,255,.95);
+  box-shadow:0 20px 60px rgba(0,100,200,.25), 0 4px 16px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.95);
+}
+.modal h2 { font-size:1.1rem; font-weight:900; color:var(--text); margin-bottom:6px; }
+.modal p  { font-size:.82rem; color:var(--sub); margin-bottom:18px; font-weight:600; line-height:1.5; }
+.modal-btns { display:flex; flex-direction:column; gap:8px; }
+.modal-btn {
+  padding:11px 16px; border-radius:999px; font-size:.84rem; font-weight:800; cursor:pointer;
+  border:1.5px solid rgba(255,255,255,.8); transition:all .15s; text-align:left;
+  position:relative; overflow:hidden; font-family:inherit;
+}
+.modal-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.45),transparent); pointer-events:none; }
+.modal-btn:hover { transform:translateY(-1px); }
+.btn-kyle   { background:linear-gradient(135deg,#93c5fd,#60a5fa); color:#fff;
+  box-shadow:0 2px 10px rgba(96,165,250,.3); }
+.btn-noelle { background:linear-gradient(135deg,#f9a8d4,#f472b6); color:#fff;
+  box-shadow:0 2px 10px rgba(244,114,182,.3); }
+.btn-all    { background:linear-gradient(135deg,#fca5a5,#f87171); color:#fff;
+  box-shadow:0 2px 10px rgba(248,113,113,.3); }
+.btn-cancel { background:rgba(255,255,255,.65); color:var(--sub);
+  box-shadow:0 1px 4px rgba(0,0,0,.08); }
+
+/* ══════════ TOAST ══════════ */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:linear-gradient(135deg,#38bdf8,#818cf8); color:#fff;
+  padding:9px 22px; border-radius:999px; font-size:.82rem; font-weight:800;
+  box-shadow:0 4px 16px rgba(56,189,248,.4); z-index:300; transition:transform .3s cubic-bezier(.4,0,.2,1);
+  pointer-events:none; white-space:nowrap;
+  border:1px solid rgba(255,255,255,.5);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+.empty-state { text-align:center; padding:40px 24px; color:var(--sub); }
+.empty-state .icon { font-size:2.8rem; margin-bottom:10px; }
+.empty-state p { font-size:.85rem; font-weight:700; }
+
+/* Responsive */
+@media(max-width:480px){
+  .rate-btn .icon { font-size:1.15rem; }
+  .rate-btn { font-size:.65rem; padding:8px 2px; }
+  .browse-grid { grid-template-columns:1fr 1fr; }
+  .card-name { font-size:1.25rem; }
+}
+@media(max-width:360px){ .browse-grid { grid-template-columns:1fr; } }
+
+/* ══════════ CREATURES LAYER ══════════ */
+.creatures-layer { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+
+/* ── Bubbles ── */
+.bubble {
+  position:absolute; border-radius:50%; bottom:-40px;
+  background: radial-gradient(circle at 32% 28%,
+    rgba(255,255,255,0.95) 0%, rgba(220,245,255,0.55) 22%,
+    rgba(170,230,255,0.18) 55%, rgba(140,215,255,0.04) 100%);
+  border:1.5px solid rgba(255,255,255,0.72);
+  box-shadow: inset 0 0 5px rgba(255,255,255,0.5),
+              0 0 8px rgba(150,220,255,0.18),
+              inset -1px -1px 4px rgba(150,200,255,0.28);
+  animation: bubbleRise var(--dur,6s) ease-in var(--delay,0s) infinite;
+  will-change: transform, opacity;
+}
+/* iridescent shimmer ring */
+.bubble::after {
+  content:''; position:absolute; inset:-1px; border-radius:50%;
+  background: conic-gradient(
+    rgba(100,200,255,0) 0%, rgba(200,150,255,0.18) 25%,
+    rgba(100,255,200,0.18) 50%, rgba(255,200,100,0.1) 75%, rgba(100,200,255,0) 100%);
+  animation: iridescent calc(var(--dur,6s) * 0.7) linear var(--delay,0s) infinite;
+}
+@keyframes iridescent { to { transform:rotate(360deg); } }
+@keyframes bubbleRise {
+  0%   { transform:translateX(0) scale(0.85); opacity:0;   bottom:-40px; }
+  4%   { opacity:0.88; }
+  88%  { opacity:0.65; transform:translateX(var(--drift,15px)) scale(1.05); }
+  97%  { opacity:0.15; }
+  100% { transform:translateX(var(--drift,15px)) scale(1.18); opacity:0; bottom:104vh; }
+}
+
+/* ── Fish ── */
+.fish-lane {
+  position:absolute; pointer-events:none;
+  animation: swimRight var(--dur,14s) linear var(--delay,0s) infinite;
+  will-change: transform;
+}
+.fish-lane.swim-left {
+  animation-name: swimLeft;
+}
+@keyframes swimRight {
+  from { transform: translateX(-110px) translateY(0); }
+  20%  { transform: translateX(20vw)  translateY(var(--y1, -8px)); }
+  50%  { transform: translateX(50vw)  translateY(var(--y2, 6px)); }
+  80%  { transform: translateX(80vw)  translateY(var(--y3, -4px)); }
+  to   { transform: translateX(calc(100vw + 110px)) translateY(0); }
+}
+@keyframes swimLeft {
+  from { transform: translateX(calc(100vw + 110px)) translateY(0); }
+  20%  { transform: translateX(80vw)  translateY(var(--y1, 6px)); }
+  50%  { transform: translateX(50vw)  translateY(var(--y2, -8px)); }
+  80%  { transform: translateX(20vw)  translateY(var(--y3, 4px)); }
+  to   { transform: translateX(-110px) translateY(0); }
+}
+
+.fish-body { display:inline-block; animation:fishWiggle 0.55s ease-in-out infinite alternate; transform-origin:60% 50%; }
+@keyframes fishWiggle {
+  from { transform:rotate(-2.5deg) translateY(-2px); }
+  to   { transform:rotate(2.5deg)  translateY(2px);  }
+}
+
+/* ── Sparkles ── */
+.sparkle {
+  position:absolute; pointer-events:none;
+  animation: sparklePop var(--sd,3s) ease-in-out var(--sdelay,0s) infinite;
+  opacity:0;
+}
+.sparkle::before, .sparkle::after {
+  content:''; position:absolute; background:rgba(255,255,255,0.9);
+  border-radius:1px; box-shadow:0 0 3px rgba(200,230,255,0.8);
+}
+.sparkle::before { width:2px; height:var(--sz,10px); left:50%; transform:translateX(-50%); top:0; }
+.sparkle::after  { height:2px; width:var(--sz,10px);  top:50%;  transform:translateY(-50%); left:0; }
+@keyframes sparklePop {
+  0%,80%,100% { opacity:0; transform:scale(0.5) rotate(0deg); }
+  40%         { opacity:1; transform:scale(1)   rotate(45deg); }
+}
+
+/* ── Sound button ── */
+.sound-btn {
+  width:32px; height:32px; border-radius:50%; border:1.5px solid rgba(255,255,255,.8);
+  background:rgba(255,255,255,.6); backdrop-filter:blur(8px); cursor:pointer; font-size:.9rem;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:all .15s; position:relative; overflow:hidden; color:var(--sub);
+}
+.sound-btn::before { content:''; position:absolute; top:0;left:0;right:0;height:50%;
+  background:linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,.1)); pointer-events:none; }
+.sound-btn:hover  { transform:scale(1.1); background:rgba(255,255,255,.85); }
+.sound-btn.active { background:linear-gradient(135deg,#38bdf8,#0ea5e9); color:#fff; border-color:rgba(255,255,255,.6);
+  box-shadow:0 2px 10px rgba(56,189,248,.35); }
+
+/* ── Fish interactive ── */
+.fish-body { cursor:pointer; pointer-events:auto; }
+@keyframes fishSpinOut {
+  0%   { transform:rotate(0deg)   scale(1);    }
+  25%  { transform:rotate(-18deg) scale(1.48); }
+  65%  { transform:rotate(205deg) scale(1.08); }
+  100% { transform:rotate(360deg) scale(1);    }
+}
+.fish-spin { animation:fishSpinOut 0.65s cubic-bezier(.25,1.8,.5,1) forwards !important; }
+.fish-name-tag {
+  position:fixed; z-index:999; pointer-events:none; transform:translateX(-50%);
+  background:rgba(255,255,255,.88); backdrop-filter:blur(8px);
+  border:1.5px solid rgba(255,255,255,.95); border-radius:999px;
+  font-family:'Nunito',sans-serif; font-size:.72rem; font-weight:800; color:#0c2d48;
+  padding:3px 11px; white-space:nowrap;
+  box-shadow:0 2px 10px rgba(0,100,200,.15);
+  animation:nameTagPop 2s ease-out forwards;
+}
+@keyframes nameTagPop {
+  0%   { opacity:0; transform:translateX(-50%) translateY(6px)  scale(.75); }
+  15%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   }
+  70%  { opacity:1; transform:translateX(-50%) translateY(-5px) scale(1);   }
+  100% { opacity:0; transform:translateX(-50%) translateY(-20px) scale(.9); }
+}
+.fish-particle {
+  position:fixed; pointer-events:none; z-index:999;
+  font-size:1.15rem; line-height:1;
+  animation:particleFloat 1.2s ease-out forwards;
+  will-change:transform,opacity;
+}
+@keyframes particleFloat {
+  0%   { transform:translate(0,0) scale(.5) rotate(0deg); opacity:1; }
+  55%  { transform:translate(var(--px,15px),var(--py,-55px)) scale(1.25) rotate(var(--pr,40deg)); opacity:.9; }
+  100% { transform:translate(var(--px,15px),var(--py,-95px)) scale(.65) rotate(var(--pr2,80deg)); opacity:0; }
+}
+
+/* ── Card map iframe ── */
+.card-map {
+  position:absolute; inset:0; width:100%; height:100%; border:0;
+  opacity:0.32; pointer-events:none; z-index:0;
+  filter:saturate(0.55) hue-rotate(195deg) brightness(0.7);
+}
+
+/* ── Clouds ── */
+#clouds-layer { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.cloud {
+  position:absolute;
+  border-radius:999px;
+  background:rgba(255,255,255,0.72);
+  filter:blur(3px);
+  animation:cloudDrift var(--cdur,90s) linear infinite var(--cdelay,0s);
+}
+.cloud::before, .cloud::after {
+  content:''; position:absolute; border-radius:50%;
+  background:rgba(255,255,255,0.72);
+}
+.cloud::before { width:52%; height:220%; top:-90%; left:18%; }
+.cloud::after  { width:38%; height:175%; top:-70%; left:52%; }
+@keyframes cloudDrift {
+  from { transform:translateX(110vw); }
+  to   { transform:translateX(calc(-100% - 10vw)); }
+}
+
+/* ── Underwater cityscape ── */
+.city-layer {
+  position:fixed; bottom:0; left:0; right:0; pointer-events:none; z-index:0;
+  overflow:hidden; height:260px;
+  animation:cityNightGlow 90s ease-in-out infinite;
+}
+@keyframes cityNightGlow {
+  0%,22%   { filter:brightness(0.85) saturate(0.75); }
+  42%,62%  { filter:brightness(1.75) saturate(2.4);  }
+  82%,100% { filter:brightness(0.85) saturate(0.75); }
+}
+/* Day / Night overlay */
+#scene-overlay {
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  animation:dayNight 90s ease-in-out infinite;
+}
+@keyframes dayNight {
+  0%,22%   { background:rgba(4,4,36,0);    }
+  42%      { background:rgba(4,4,36,0.70); }
+  62%      { background:rgba(4,4,36,0.70); }
+  82%,100% { background:rgba(4,4,36,0);    }
+}
+.city-scroll {
+  display:flex; height:100%; width:max-content;
+  animation:cityDrift 95s linear infinite;
+  will-change:transform;
+}
+@keyframes cityDrift {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
+}
+.city-layer::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(8,28,58,0) 0%, rgba(8,28,58,.06) 45%, rgba(8,28,58,.28) 100%);
+}
+
+/* ── Octopus body ── */
+@keyframes octoPulse {
+  from { transform: scaleX(1)    scaleY(1); }
+  to   { transform: scaleX(1.07) scaleY(0.93); }
+}
+.octo-body {
+  display:inline-block; cursor:pointer; pointer-events:auto;
+  animation:octoPulse 1.1s ease-in-out infinite alternate;
+  transform-origin:50% 45%;
+}
+
+/* ── Jellyfish body ── */
+@keyframes jellyPulse {
+  0%,100% { transform: scaleY(1)    scaleX(1); }
+  35%     { transform: scaleY(0.80) scaleX(1.14); }
+}
+.jelly-body {
+  display:inline-block; cursor:pointer; pointer-events:auto;
+  animation:jellyPulse 2.0s ease-in-out infinite;
+  transform-origin:50% 18%;
+}
+
+/* ── Pufferfish body ── */
+@keyframes pufferWobble {
+  from { transform: rotate(-2.5deg) scale(1); }
+  to   { transform: rotate(2.5deg)  scale(1.05); }
+}
+.puffer-body {
+  display:inline-block; cursor:pointer; pointer-events:auto;
+  animation:pufferWobble 0.62s ease-in-out infinite alternate;
+  transform-origin:50% 50%;
+}
+</style>
+</head>
+<body>
+
+<!-- Background orbs -->
+<div class="bg-scene">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+<!-- Day/night cycle overlay -->
+<div id="scene-overlay"></div>
+<!-- Clouds -->
+<div id="clouds-layer"></div>
+
+<!-- Underwater cityscape (behind fish) -->
+<div class="city-layer"><div class="city-scroll" id="city-scroll"></div></div>
+
+<!-- Creatures layer (bubbles + fish + sparkles — populated by JS) -->
+<div class="creatures-layer" id="creatures"></div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+      <path d="M4 14L15 4L26 14V27C26 27.55 25.55 28 25 28H19V21H11V28H5C4.45 28 4 27.55 4 27V14Z" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M15 20C15 20 10 16.8 10 13C10 11.1 11.6 9.5 13.5 9.5C14.4 9.5 15 10.3 15 10.3C15 10.3 15.6 9.5 16.5 9.5C18.4 9.5 20 11.1 20 13C20 16.8 15 20 15 20Z" fill="#f43f8e"/>
+    </svg>
+    <div class="header-text">
+      <h1>SLC Apartment Hunt</h1>
+      <div class="header-sub">Kyle &amp; Noelle · Salt Lake City</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="user-pills">
+      <button class="user-pill" id="pill-kyle" onclick="setUser('kyle')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="3.8" r="2.4"/><path d="M1 13c0-3.04 2.46-5.5 5.5-5.5S12 9.96 12 13" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+        Kyle
+      </button>
+      <button class="user-pill" id="pill-noelle" onclick="setUser('noelle')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="3.8" r="2.4"/><path d="M1 13c0-3.04 2.46-5.5 5.5-5.5S12 9.96 12 13" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+        Noelle
+      </button>
+    </div>
+    <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Toggle sounds">
+      <span class="snd-on"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.5 5.5h2.8L8 3v10L4.3 10.5H1.5V5.5Z"/><path d="M10.5 6a2.5 2.5 0 0 1 0 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M12.2 4.2a5 5 0 0 1 0 7.6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></span>
+      <span class="snd-off"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.5 5.5h2.8L8 3v10L4.3 10.5H1.5V5.5Z"/><line x1="11" y1="6" x2="14" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="14" y1="6" x2="11" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+    </button>
+    <button class="clear-btn" onclick="openModal()" title="Clear ratings">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 3h12"/><path d="M4.5 3V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V3"/><path d="M2.5 3l.8 9c.05.5.47.9.98.9H9.7c.5 0 .93-.4.98-.9L11.5 3"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" id="tab-rate" onclick="switchTab('rate')">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="9" height="9" rx="2"/><path d="M4 4V3a1.5 1.5 0 0 1 1.5-1.5H12A1.5 1.5 0 0 1 13.5 3v7.5A1.5 1.5 0 0 1 12 12H11"/></svg>
+    Rate
+  </div>
+  <div class="tab" id="tab-scores" onclick="switchTab('scores')">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="1" y="8" width="3" height="5" rx="1"/><rect x="5.5" y="5" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="11" rx="1"/></svg>
+    Scores
+  </div>
+  <div class="tab" id="tab-browse" onclick="switchTab('browse')">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="4"/><path d="M9.5 9.5L12.5 12.5"/></svg>
+    Browse
+  </div>
+</div>
+
+<!-- ════ RATE VIEW ════ -->
+<div class="view active" id="view-rate">
+  <div class="rate-progress">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <div class="progress-text" id="prog-text"></div>
+  </div>
+  <div id="rate-card-container"></div>
+  <div class="card-nav" style="margin-top:10px">
+    <button class="nav-btn" onclick="rateNav(-1)">← Prev</button>
+    <span class="card-counter" id="rate-counter"></span>
+    <button class="nav-btn" onclick="rateNav(1)">Next →</button>
+  </div>
+  <button class="jump-btn" onclick="jumpToUnrated()">
+    <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true"><path d="M6 0.5L0.5 8h4L3.5 13.5L9.5 5.5H5.5L6 0.5Z"/></svg>
+    Jump to Next Unrated
+  </button>
+</div>
+
+<!-- ════ SCORES VIEW ════ -->
+<div class="view" id="view-scores">
+  <div class="score-tabs">
+    <div class="score-tab active" id="stab-combined" onclick="setScoreTab('combined')">
+      <svg width="14" height="12" viewBox="0 0 14 12" fill="#f43f8e" aria-hidden="true"><path d="M7 11C7 11 1 7.5 1 3.5 1 1.567 2.567 0 4.5 0 5.657 0 7 1.2 7 1.2 7 1.2 8.343 0 9.5 0 11.433 0 13 1.567 13 3.5 13 7.5 7 11 7 11Z"/></svg>
+      Together
+    </div>
+    <div class="score-tab" id="stab-kyle" onclick="setScoreTab('kyle')">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="3.8" r="2.4"/><path d="M1 13c0-3.04 2.46-5.5 5.5-5.5S12 9.96 12 13" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      Kyle
+    </div>
+    <div class="score-tab" id="stab-noelle" onclick="setScoreTab('noelle')">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="3.8" r="2.4"/><path d="M1 13c0-3.04 2.46-5.5 5.5-5.5S12 9.96 12 13" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      Noelle
+    </div>
+  </div>
+  <div id="match-section"></div>
+  <div class="chart-container">
+    <h3 id="chart-title">Top Rated</h3>
+    <div id="chart-empty" class="empty-state" style="display:none"><div class="icon">📊</div><p>Rate apartments to see scores!</p></div>
+    <canvas id="scoreChart" height="300"></canvas>
+  </div>
+  <div class="rank-list">
+    <h3 id="rank-title">Full Rankings</h3>
+    <div id="rank-list-body"></div>
+  </div>
+</div>
+
+<!-- ════ BROWSE VIEW ════ -->
+<div class="view" id="view-browse">
+  <div class="filter-bar">
+    <button class="filter-chip" data-filter="pool"   onclick="toggleFilter(this)">🏊 Pool</button>
+    <button class="filter-chip" data-filter="hottub" onclick="toggleFilter(this)">♨ Hot Tub</button>
+    <button class="filter-chip" data-filter="gym"    onclick="toggleFilter(this)">💪 Gym</button>
+    <button class="filter-chip" data-filter="budget" onclick="toggleFilter(this)">💰 Under $3k</button>
+    <button class="filter-chip" data-filter="close"  onclick="toggleFilter(this)">🚗 &lt;15 min</button>
+    <select class="sort-select" id="browse-sort" onchange="renderBrowse()">
+      <option value="score">Sort: Score</option>
+      <option value="distance">Sort: Distance</option>
+      <option value="price">Sort: Price</option>
+      <option value="name">Sort: A–Z</option>
+    </select>
+  </div>
+  <div class="browse-grid" id="browse-grid"></div>
+</div>
+
+<!-- ════ CLEAR MODAL ════ -->
+<div class="modal-overlay" id="clear-modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2>🗑️ Clear Ratings</h2>
+    <p>Choose whose ratings to clear. This can't be undone.</p>
+    <div class="modal-btns">
+      <button class="modal-btn btn-kyle"   onclick="clearRatings('kyle')">👤 Clear Kyle's ratings</button>
+      <button class="modal-btn btn-noelle" onclick="clearRatings('noelle')">👤 Clear Noelle's ratings</button>
+      <button class="modal-btn btn-all"    onclick="clearRatings('all')">⚠️ Clear ALL ratings</button>
+      <button class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════
+// DATA
+// ════════════════════════
+const GRADIENTS = [
+  ['#00b4d8','#0077b6'],['#52b788','#1b4332'],['#a78bfa','#6d28d9'],
+  ['#fb923c','#c2410c'],['#38bdf8','#0284c7'],['#4ade80','#15803d'],
+  ['#f472b6','#be185d'],['#34d399','#065f46'],['#818cf8','#4338ca'],
+  ['#fb7185','#be123c'],['#22d3ee','#0e7490'],['#a3e635','#3f6212'],
+  ['#fbbf24','#b45309'],['#c084fc','#7e22ce'],['#2dd4bf','#0f766e'],
+  ['#60a5fa','#1d4ed8'],['#f97316','#9a3412'],['#e879f9','#a21caf'],
+  ['#86efac','#166534'],['#7dd3fc','#075985'],
+];
+
+const apts = [
+  {id:1,  name:"The DeWitt",                price:2340, ps:"$2,340", sqft:"502–1,275 sqft",    pool:false, ht:false, gym:true,  over:false, mi:2.0,  min:8,  addr:"352 S 500 E, Salt Lake City, UT 84102",            web:"https://thedewittslc.com",               amen:"Bike storage, EV charging, 9ft ceilings",              notes:null},
+  {id:2,  name:"Current Apartments",        price:1786, ps:"$1,786", sqft:"520–699+ sqft",     pool:true,  ht:false, gym:true,  over:false, mi:11.0, min:18, addr:"4994 S Commerce Dr, Murray, UT 84107",               web:"https://currentaptsmurray.com",          amen:"Rooftop deck, gaming clubhouse, pet wash",             notes:"Murray (~11 mi to U)"},
+  {id:3,  name:"Regius Square",             price:2500, ps:"$2,500", sqft:"513–1,083 sqft",    pool:false, ht:false, gym:true,  over:false, mi:2.5,  min:10, addr:"33 S 600 E, Salt Lake City, UT 84102",               web:"https://regiussquare.com",               amen:"Speakeasy lounge, bouldering wall, hammock garden",    notes:null},
+  {id:4,  name:"Braxton at Trolley Square", price:2200, ps:"$2,200", sqft:"939–1,113 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:1.8,  min:7,  addr:"727 E 600 S, Salt Lake City, UT 84102",              web:"https://www.google.com/search?q=Braxton+at+Trolley+Square+SLC", amen:"Pool, year-round hot tub, 24hr fitness, bike storage", notes:null},
+  {id:5,  name:"Liberty BLVD",              price:2174, ps:"$2,174", sqft:"438–1,037 sqft",    pool:true,  ht:false, gym:true,  over:false, mi:2.5,  min:9,  addr:"455 S 700 E, Salt Lake City, UT 84102",              web:"https://libertyblvd.com",                amen:"4th Space study area, resort-style pool, bike storage", notes:null},
+  {id:6,  name:"Alta Stone at the Gateway", price:2106, ps:"$2,106", sqft:"Studio–3 Bed",      pool:true,  ht:true,  gym:true,  over:false, mi:5.0,  min:14, addr:"565 W 100 S, Salt Lake City, UT 84101",              web:"https://altastoneatthegateway.com",      amen:"Ski shop, waterfall pool, rooftop terrace, sauna",     notes:null},
+  {id:7,  name:"Liberty Duet",              price:2622, ps:"$2,622", sqft:"500–1,100+ sqft",   pool:false, ht:false, gym:true,  over:false, mi:2.5,  min:9,  addr:"357 E 500 S, Salt Lake City, UT 84111",              web:"https://libertyduet.com",                amen:"Neon-vibrant design, large amenity space, EV charging", notes:null},
+  {id:8,  name:"The Richmond",              price:2199, ps:"$2,199", sqft:"537–703 sqft",      pool:true,  ht:null,  gym:true,  over:false, mi:1.5,  min:6,  addr:"1280 E Villa Vista Ave, Salt Lake City, UT 84106",   web:"https://therichmondapts.com",            amen:"Quartz island kitchens, private balconies, EV parking", notes:"Near U campus"},
+  {id:9,  name:"Cottonwood Highland",       price:2221, ps:"$2,221", sqft:"503–1,521 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:1.5,  min:6,  addr:"1323 E Villa Vista Ave, Salt Lake City, UT 84106",   web:"https://cottonwoodhighlandapts.com",     amen:"Townhomes avail., spa, 1 month free special",          notes:"Closest to U; 1 month free"},
+  {id:10, name:"Rockledge at Quarry Bend",  price:1730, ps:"$1,730", sqft:"935–1,347 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:18.0, min:28, addr:"903 E Cobblegate Dr, Sandy, UT 84094",               web:"https://rockledgeut.com",                amen:"Boot camp classes, community bikes, large floor plans", notes:"Sandy — 18 mi to U of U"},
+  {id:11, name:"Liberty Square",            price:2495, ps:"$2,495", sqft:"Studio–2 Bed",      pool:false, ht:false, gym:false, over:false, mi:2.8,  min:9,  addr:"717 S 600 E, Salt Lake City, UT 84102",              web:"https://libertysquaresaltlake.com",      amen:"Modern finishes, high-end cabinetry",                  notes:"No pool, hot tub, or gym"},
+  {id:12, name:"The Marq Townhomes",        price:2200, ps:"$2,200", sqft:"2–3 Beds",          pool:true,  ht:false, gym:null,  over:false, mi:5.0,  min:14, addr:"1030 S 400 W, Salt Lake City, UT 84101",             web:"https://themarqutah.com",                amen:"Attached garages, rooftop decks, townhome layouts",    notes:"Gym unconfirmed"},
+  {id:13, name:"One Burton",                price:2419, ps:"$2,419", sqft:"526–1,174 sqft",    pool:false, ht:true,  gym:true,  over:false, mi:6.5,  min:14, addr:"1 W Burton Ave, South Salt Lake, UT 84115",          web:"https://oneburton.com",                  amen:"Urban mudrooms, mountain-view windows, EV charging",   notes:null},
+  {id:14, name:"Liberty Sky",               price:2899, ps:"$2,899", sqft:"497–714+ sqft",     pool:true,  ht:true,  gym:true,  over:false, mi:3.0,  min:11, addr:"151 S State St, Salt Lake City, UT 84111",           web:"https://www.google.com/search?q=Liberty+Sky+Apartments+SLC", amen:"Movie theater, rooftop spa/pool, free parking special", notes:null},
+  {id:15, name:"The Gauge",                 price:1937, ps:"$1,937", sqft:"521–678+ sqft",     pool:true,  ht:true,  gym:true,  over:false, mi:6.0,  min:14, addr:"111 N Cornell St, Salt Lake City, UT 84116",          web:"https://thegaugeslc.com",                amen:"Spa, island kitchens, pet wash station",               notes:"West SLC area"},
+  {id:16, name:"Journeyman",                price:2840, ps:"$2,840", sqft:"1–2 Beds",          pool:true,  ht:true,  gym:true,  over:false, mi:5.0,  min:13, addr:"438 W 700 S, Salt Lake City, UT 84101",              web:"https://journeymanslc.com",              amen:"Integrated retail, luxury pool lounge, designer finishes",notes:null},
+  {id:17, name:"Bowers",                    price:2143, ps:"$2,143", sqft:"451–1,512 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:7.0,  min:15, addr:"55 W Utopia Ave, South Salt Lake, UT 84115",          web:"https://bowersresidences.com",           amen:"Smart home tech, business center, dog park",           notes:null},
+  {id:18, name:"Encore",                    price:2519, ps:"$2,519", sqft:"537–1,258 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:3.0,  min:10, addr:"489 E 400 S, Salt Lake City, UT 84111",              web:"https://encoresaltlake.com",             amen:"Golf simulator, yoga studio, heated year-round pool",  notes:null},
+  {id:19, name:"The Charles",               price:3344, ps:"$3,344", sqft:"Studio–Pent.",      pool:true,  ht:true,  gym:true,  over:true,  mi:5.0,  min:14, addr:"111 S 300 W, Salt Lake City, UT 84101",              web:"https://thecharlesslc.com",              amen:"Poker lounge, wine tasting room, micro offices",       notes:"Over $3k budget"},
+  {id:20, name:"Park at Legacy Trails",     price:1670, ps:"$1,670", sqft:"1–3 Beds",          pool:true,  ht:true,  gym:true,  over:false, mi:15.0, min:25, addr:"305 N 1300 W, Centerville, UT 84014",                web:"https://parkatlegacytrails.com",         amen:"Lowest price with pool; suburban feel, resident lounge",notes:"Centerville — 15 mi to U of U"},
+  {id:21, name:"The Royce on 9th",          price:1919, ps:"$1,919", sqft:"647–1,192 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:10.0, min:19, addr:"853 E 4680 S, Murray, UT 84117",                     web:"https://liveattheroyce.com",             amen:"2-floor gym, jacuzzi, arcade, rooftop lounge",         notes:"Murray (~10 mi to U)"},
+  {id:22, name:"Station Five",              price:1799, ps:"$1,799", sqft:"1–2 Beds",          pool:false, ht:false, gym:false, over:false, mi:6.0,  min:13, addr:"2248 S 440 E, South Salt Lake, UT 84115",            web:"https://stationfivetownhomes.com",       amen:"Contemporary townhomes, private yards, dog wash",      notes:"Townhomes; no pool/gym"},
+  {id:23, name:"Hardware Village",          price:2942, ps:"$2,942", sqft:"Studio–Brown.",     pool:true,  ht:true,  gym:true,  over:false, mi:5.0,  min:13, addr:"455 W 200 N, Salt Lake City, UT 84103",              web:"https://hardwareapartments.com",         amen:"Rooftop infinity pool, sauna, massage room",           notes:"Sauna on-site"},
+  {id:24, name:"H2O Lofts",                 price:2700, ps:"$2,700", sqft:"613–1,956 sqft",    pool:true,  ht:null,  gym:true,  over:false, mi:10.0, min:21, addr:"820 W Timbercreek Way, West Valley City, UT 84119",   web:"https://liveath2o.com",                  amen:"Attached garages, finished basements, large sq ft",    notes:"West Valley (~10 mi to U)"},
+  {id:25, name:"The Turnberry",             price:1699, ps:"$1,699", sqft:"1–2 Beds",          pool:true,  ht:true,  gym:true,  over:false, mi:6.5,  min:14, addr:"4422 S Muirfield Dr, Salt Lake City, UT 84124",      web:"https://turnberryapts.com",              amen:"Fitness center, pool, pickleball & soccer court",      notes:"Millcreek area"},
+  {id:26, name:"Zephyr",                    price:2843, ps:"$2,843", sqft:"Studio–2 Bed",      pool:true,  ht:true,  gym:true,  over:false, mi:4.5,  min:13, addr:"360 W 200 S, Salt Lake City, UT 84101",              web:"https://zephyrslc.com",                  amen:"All-season spa pool, ski storage, yoga studio",        notes:null},
+  {id:27, name:"Ridgeview",                 price:1599, ps:"$1,599", sqft:"Studio–2 Bed",      pool:false, ht:false, gym:true,  over:false, mi:9.0,  min:18, addr:"110 S Main St, North Salt Lake, UT 84054",           web:"https://liveatridgeviewapts.com",        amen:"Budget-friendly, great fitness center",                notes:"North SLC (~9 mi to U)"},
+  {id:28, name:"Brix Residences",           price:3033, ps:"$3,033", sqft:"537–1,321 sqft",    pool:false, ht:true,  gym:true,  over:true,  mi:4.5,  min:13, addr:"241 W 400 S, Salt Lake City, UT 84101",              web:"https://brixresidences.com",             amen:"Penthouses, hot tubs, Edison House rooftop pool access",notes:"Over $3k; Edison House pool membership"},
+  {id:29, name:"Astra Tower",               price:3225, ps:"$3,225", sqft:"Studio–3 Bed",      pool:true,  ht:true,  gym:true,  over:true,  mi:3.0,  min:11, addr:"89 E 200 S, Salt Lake City, UT 84111",               web:"https://www.google.com/search?q=Astra+Tower+SLC+apartments", amen:"Tallest bldg in UT, 40k sqft amenities, level-23 pool",notes:"Over $3k budget"},
+  {id:30, name:"Heights at Grand Terrace",  price:2015, ps:"$2,015", sqft:"730–1,200 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:10.0, min:20, addr:"820 W Timbercreek Way, Salt Lake City, UT 84119",     web:"https://www.apartmentlist.com/ut/salt-lake-city/eight20-apartments", amen:"Scenic views, pool, spacious floor plans, tennis",    notes:"Listed as Eight20 Apts (~10 mi to U)"},
+  {id:31, name:"The Revival",               price:2069, ps:"$2,069", sqft:"Studio–2 Bed",      pool:true,  ht:true,  gym:true,  over:false, mi:4.5,  min:13, addr:"371 S 200 W, Salt Lake City, UT 84101",              web:"https://liveattherevival.com",           amen:"Industrial-chic design, rooftop access, fire pits",    notes:null},
+  {id:32, name:"Sugarmont Apartments",      price:2730, ps:"$2,730", sqft:"560–1,240 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:3.5,  min:12, addr:"2191 S McClelland St, Salt Lake City, UT 84106",      web:"https://sugarmontapartments.com",        amen:"Yoga studio, art studio, terrace pool, Sugar House",   notes:"Sugar House neighborhood"},
+  {id:33, name:"Harvest",                   price:2430, ps:"$2,430", sqft:"Studio–2 Bed",      pool:true,  ht:false, gym:true,  over:false, mi:5.0,  min:13, addr:"550 N 300 W, Salt Lake City, UT 84103",              web:"https://harvestlivingslc.com",           amen:"Nest smart tech, pool, game room, six terraces",       notes:null},
+  {id:34, name:"4th West",                  price:2472, ps:"$2,472", sqft:"763–1,200+ sqft",   pool:true,  ht:true,  gym:true,  over:false, mi:5.0,  min:14, addr:"255 N 400 W, Salt Lake City, UT 84103",              web:"https://4thwest.com",                    amen:"Rooftop pool, sauna, basketball court, bark park",     notes:null},
+  {id:35, name:"Harmony 3900",              price:1950, ps:"$1,950", sqft:"545–767 sqft",      pool:true,  ht:true,  gym:true,  over:false, mi:9.0,  min:18, addr:"3900 S W Temple St, South Salt Lake, UT 84115",      web:"https://harmony3900.com",                amen:"Modern lighting, covered parking, pool & spa",         notes:"South SLC (~9 mi to U)"},
+  {id:36, name:"Millhaus",                  price:2630, ps:"$2,630", sqft:"Studio–2 Bed",      pool:true,  ht:true,  gym:true,  over:false, mi:3.5,  min:11, addr:"1350 E Miller Ave, Salt Lake City, UT 84106",        web:"https://livemillhaus.com",               amen:"Sustainable build, 2-story fitness, podium pool",      notes:"Millcreek/Sugar House adj."},
+  {id:37, name:"Brixton",                   price:2105, ps:"$2,105", sqft:"650–1,161 sqft",    pool:false, ht:false, gym:true,  over:false, mi:3.5,  min:11, addr:"660 E Wilmington Ave, Salt Lake City, UT 84106",     web:"https://brixtonslc.com",                 amen:"Multi-level townhomes, island kitchens, pet spa",      notes:"Townhome option"},
+  {id:38, name:"Mirella at Foxboro",        price:1751, ps:"$1,751", sqft:"725–1,200 sqft",    pool:true,  ht:true,  gym:true,  over:false, mi:12.0, min:23, addr:"790 N Cutler Dr, North Salt Lake, UT 84054",          web:"https://liveatmirella.com",              amen:"Pool, hot tub, resident lounge",                       notes:"North SLC (~12 mi to U)"},
+  {id:39, name:"Hawthorne Townhomes",       price:2278, ps:"$2,278", sqft:"Up to 1,537 sqft",  pool:true,  ht:true,  gym:true,  over:false, mi:8.0,  min:16, addr:"2852 S W Temple St, South Salt Lake, UT 84115",      web:"https://hawthorneslc.com",               amen:"Townhomes, 2-car garages, resort pool, garden boxes",  notes:"Townhome w/ garage"},
+  {id:40, name:"The Zeller",                price:1971, ps:"$1,971", sqft:"Studio–2 Bed",      pool:true,  ht:false, gym:true,  over:false, mi:6.5,  min:14, addr:"2255 S 300 E, South Salt Lake, UT 84115",            web:"https://liveatthezeller.com",            amen:"Olympic lap pool, rooftop deck, S-Line access",        notes:"Olympic lap pool (not leisure)"},
+];
+
+// ════════════════════════
+// STATE
+// ════════════════════════
+let ratings = JSON.parse(localStorage.getItem('slcRatings') || '{"kyle":{},"noelle":{}}');
+let currentUser = localStorage.getItem('slcUser') || 'kyle';
+let currentTab  = 'rate';
+let rateIdx     = 0;
+let activeFilters = new Set();
+let scoreTabMode  = 'combined';
+let chartInst     = null;
+
+// ════════════════════════
+// UTILS
+// ════════════════════════
+function save() { localStorage.setItem('slcRatings', JSON.stringify(ratings)); }
+function grad(i) { const [a,b]=GRADIENTS[i%GRADIENTS.length]; return `linear-gradient(135deg,${a},${b})`; }
+function distCol(min) { return min<=8?'#15803d':min<=14?'#d97706':'#dc2626'; }
+function rLabel(v) { return v===4?'❤️ Love':v===3?'👍 Like':v===2?'😐 Meh':v===1?'👎 Pass':'—'; }
+function rShort(v) { return v===4?'❤️':v===3?'👍':v===2?'😐':v===1?'👎':'·'; }
+function scCls(v)  { return v?`s${v}`:'s0'; }
+function combined(a) {
+  const k=ratings.kyle[a.id], n=ratings.noelle[a.id];
+  if(k&&n) return(k+n)/2; if(k) return k; if(n) return n; return null;
+}
+
+// ════════════════════════
+// USER + TABS
+// ════════════════════════
+function setUser(u) {
+  currentUser = u;
+  localStorage.setItem('slcUser', u);
+  document.getElementById('pill-kyle').className   = 'user-pill'+(u==='kyle'   ?' active-kyle'  :'');
+  document.getElementById('pill-noelle').className = 'user-pill'+(u==='noelle'?' active-noelle':'');
+  renderCurrentTab();
+}
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  renderCurrentTab();
+}
+function renderCurrentTab() {
+  if(currentTab==='rate')   renderRate();
+  if(currentTab==='scores') renderScores();
+  if(currentTab==='browse') renderBrowse();
+}
+
+// ════════════════════════
+// MODAL + TOAST
+// ════════════════════════
+function openModal()  { document.getElementById('clear-modal').classList.add('open'); }
+function closeModal() { document.getElementById('clear-modal').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target.id==='clear-modal') closeModal(); }
+
+function clearRatings(who) {
+  if(who==='kyle')   { ratings.kyle   = {}; showToast("👤 Kyle's ratings cleared"); }
+  if(who==='noelle') { ratings.noelle = {}; showToast("👤 Noelle's ratings cleared"); }
+  if(who==='all')    { ratings = {kyle:{},noelle:{}}; showToast('🗑️ All ratings cleared'); }
+  save(); closeModal(); renderCurrentTab(); updateProgress();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ════════════════════════
+// RATE VIEW
+// ════════════════════════
+function renderRate() {
+  updateProgress();
+  renderCard(apts[rateIdx]);
+  document.getElementById('rate-counter').textContent = `${rateIdx+1} / ${apts.length}`;
+}
+function updateProgress() {
+  const n = Object.keys(ratings[currentUser]).length;
+  document.getElementById('prog-fill').style.width = (n/apts.length*100)+'%';
+  document.getElementById('prog-text').textContent  = `${n}/${apts.length} rated`;
+}
+function renderCard(a) {
+  const my = ratings[currentUser][a.id];
+  const thK = currentUser==='kyle'?'noelle':'kyle';
+  const thN = thK.charAt(0).toUpperCase()+thK.slice(1);
+  const th  = ratings[thK][a.id];
+
+  const ab = (v,l) => {
+    const c=v===true?'amen-yes':v===false?'amen-no':'amen-unk';
+    const s=v===true?'✓':v===false?'✗':'?';
+    return `<span class="amen-badge ${c}">${s} ${l}</span>`;
+  };
+
+  document.getElementById('rate-card-container').innerHTML = `
+  <div class="apt-card" id="the-card">
+    <div class="card-hero" style="background:${grad(a.id-1)}">
+      <iframe class="card-map" src="https://maps.google.com/maps?q=${encodeURIComponent(a.addr)}&z=17&output=embed" loading="lazy" referrerpolicy="no-referrer" title="${a.name} location"></iframe>
+      <div class="card-num">#${a.id} of ${apts.length}</div>
+      <div class="card-name">${a.name}</div>
+      <div class="card-meta">
+        <span class="badge badge-price">💰 ${a.ps}/mo</span>
+        <span class="badge badge-dist">🚗 ${a.mi} mi · ${a.min} min</span>
+        ${a.over?'<span class="badge badge-over">⚠ Over $3k</span>':''}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-address">📍 ${a.addr}</div>
+      <div class="amenity-row">${ab(a.pool,'🏊 Pool')}${ab(a.ht,'♨ Hot Tub')}${ab(a.gym,'💪 Gym')}</div>
+      <div class="card-amenities">${a.amen}</div>
+      ${a.notes?`<div class="card-note">⚠️ ${a.notes}</div>`:''}
+      <a class="card-website" href="${a.web}" target="_blank" rel="noopener">🔗 Visit Website</a>
+      ${th?`<div class="existing-rating"><span class="existing-label">${thN}:</span><span class="existing-chip chip-${th}">${rLabel(th)}</span></div>`:''}
+      ${my?`<div class="existing-rating"><span class="existing-label">You:</span><span class="existing-chip chip-${my}">${rLabel(my)}</span></div>`:''}
+    </div>
+    <div class="rate-buttons">
+      <button class="rate-btn rate-btn-pass ${my===1?'active':''}" onclick="rate(${a.id},1)"><span class="icon">👎</span>Pass</button>
+      <button class="rate-btn rate-btn-meh  ${my===2?'active':''}" onclick="rate(${a.id},2)"><span class="icon">😐</span>Meh</button>
+      <button class="rate-btn rate-btn-like ${my===3?'active':''}" onclick="rate(${a.id},3)"><span class="icon">👍</span>Like</button>
+      <button class="rate-btn rate-btn-love ${my===4?'active':''}" onclick="rate(${a.id},4)"><span class="icon">❤️</span>Love</button>
+    </div>
+  </div>`;
+}
+function rate(id, score) {
+  const alreadyRated = !!ratings[currentUser][id];
+  ratings[currentUser][id] = score;
+  save();
+  if (alreadyRated) {
+    // Just re-render in place so they can see the updated selection
+    renderCard(apts[rateIdx]);
+    updateProgress();
+    showToast(rLabel(score) + ' — updated!');
+  } else {
+    // First-time rating: animate out and advance
+    const card = document.getElementById('the-card');
+    if (card) {
+      card.classList.add(score >= 3 ? 'slide-out-right' : 'slide-out-left');
+      setTimeout(() => { if (rateIdx < apts.length - 1) rateIdx++; renderRate(); }, 280);
+    }
+  }
+}
+function rateNav(d) { rateIdx=Math.max(0,Math.min(apts.length-1,rateIdx+d)); renderRate(); }
+function jumpToUnrated() {
+  for(let i=0;i<apts.length;i++){
+    const idx=(rateIdx+1+i)%apts.length;
+    if(!ratings[currentUser][apts[idx].id]){ rateIdx=idx; renderRate(); return; }
+  }
+  showToast('🎉 All '+apts.length+' apartments rated!');
+}
+
+// ════════════════════════
+// SCORES VIEW
+// ════════════════════════
+function setScoreTab(mode) {
+  scoreTabMode=mode;
+  document.querySelectorAll('.score-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('stab-'+mode).classList.add('active');
+  renderScores();
+}
+function renderScores() {
+  const mode=scoreTabMode;
+  const scored = apts.map(a=>{
+    const k=ratings.kyle[a.id], n=ratings.noelle[a.id];
+    let score=0, detail='Not rated';
+    if(mode==='combined'){
+      if(k&&n){score=(k+n)/2;detail=`Kyle ${rShort(k)} · Noelle ${rShort(n)}`;}
+      else if(k){score=k;detail=`Kyle ${rShort(k)} · Noelle —`;}
+      else if(n){score=n;detail=`Kyle — · Noelle ${rShort(n)}`;}
+    } else {
+      const r=mode==='kyle'?k:n;
+      if(r){score=r;detail=rLabel(r);}
+    }
+    return {a,score,detail};
+  }).sort((x,y)=>y.score-x.score||x.a.price-y.a.price);
+
+  // Match section
+  if(mode==='combined'){
+    const love=apts.filter(a=>ratings.kyle[a.id]===4&&ratings.noelle[a.id]===4);
+    const like=apts.filter(a=>{const k=ratings.kyle[a.id],n=ratings.noelle[a.id];return k&&n&&k>=3&&n>=3&&!(k===4&&n===4);});
+    document.getElementById('match-section').innerHTML = (love.length||like.length)?`
+      <div class="glass-box">
+        <h3>💑 You Both Love / Like</h3>
+        <div class="match-list">
+          ${love.map(a=>`<span class="match-chip match-both-love" onclick="goTo(${a.id})">❤️ ${a.name}</span>`).join('')}
+          ${like.map(a=>`<span class="match-chip match-both-like" onclick="goTo(${a.id})">👍 ${a.name}</span>`).join('')}
+        </div>
+      </div>` :
+      `<div class="glass-box"><div class="empty-state" style="padding:8px 0"><div class="icon">💑</div><p>Rate apartments to see what you agree on!</p></div></div>`;
+  } else { document.getElementById('match-section').innerHTML=''; }
+
+  // Chart
+  const titles={combined:'Combined Top Rated',kyle:"Kyle's Top Rated",noelle:"Noelle's Top Rated"};
+  document.getElementById('chart-title').textContent = titles[mode];
+  document.getElementById('rank-title').textContent  = titles[mode]+' — Full List';
+  const top = scored.filter(s=>s.score>0).slice(0,15);
+
+  if(chartInst) { chartInst.destroy(); chartInst = null; }
+  const isEmpty = !top.length;
+  document.getElementById('chart-empty').style.display = isEmpty ? '' : 'none';
+  document.getElementById('scoreChart').style.display  = isEmpty ? 'none' : '';
+  if(!isEmpty) {
+    const ctx=document.getElementById('scoreChart').getContext('2d');
+    chartInst = new Chart(ctx,{
+      type:'bar',
+      data:{labels:top.map(s=>s.a.name.length>22?s.a.name.slice(0,20)+'…':s.a.name),
+            datasets:[{data:top.map(s=>s.score),
+              backgroundColor:top.map(s=>s.score>=3.5?'#f472b6':s.score>=2.5?'#60a5fa':s.score>=1.5?'#fbbf24':'#94a3b8'),
+              borderRadius:6,borderSkipped:false}]},
+      options:{indexAxis:'y',responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+rLabel(Math.round(c.raw*2)/2)+` (${c.raw.toFixed(1)})`}}},
+        scales:{x:{min:0,max:4,ticks:{stepSize:1,callback:v=>['','👎','😐','👍','❤️'][v]||''}},
+                y:{ticks:{font:{size:11,family:'Nunito'}}}}},
+    });
+  }
+
+  // Rank list
+  document.getElementById('rank-list-body').innerHTML = scored.map((s,i)=>{
+    const k=ratings.kyle[s.a.id], n=ratings.noelle[s.a.id];
+    const nc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const bar=s.score>0?`<div class="combined-bar"><div class="combined-fill" style="width:${s.score/4*100}%"></div></div>`:'';
+    return `<div class="rank-item" onclick="goTo(${s.a.id})">
+      <div class="rank-num ${nc}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${s.a.name}</div>
+        <div class="rank-detail">${s.a.ps}/mo · ${s.a.min} min · ${s.detail}</div>
+      </div>
+      <div class="rank-score">
+        ${mode==='combined'?`<div class="score-dot ${scCls(k)}">${rShort(k)}</div><div class="score-dot ${scCls(n)}">${rShort(n)}</div>`:''}
+        ${bar}
+      </div>
+    </div>`;
+  }).join('');
+}
+function goTo(id){ rateIdx=apts.findIndex(a=>a.id===id); switchTab('rate'); }
+
+// ════════════════════════
+// BROWSE VIEW
+// ════════════════════════
+function toggleFilter(btn){
+  const f=btn.dataset.filter;
+  if(activeFilters.has(f)){activeFilters.delete(f);btn.classList.remove('active');}
+  else{activeFilters.add(f);btn.classList.add('active');}
+  renderBrowse();
+}
+function renderBrowse(){
+  const sort=document.getElementById('browse-sort').value;
+  let list=[...apts];
+  if(activeFilters.has('pool'))   list=list.filter(a=>a.pool===true);
+  if(activeFilters.has('hottub')) list=list.filter(a=>a.ht===true);
+  if(activeFilters.has('gym'))    list=list.filter(a=>a.gym===true);
+  if(activeFilters.has('budget')) list=list.filter(a=>!a.over);
+  if(activeFilters.has('close'))  list=list.filter(a=>a.min<15);
+  if(sort==='score')    list.sort((a,b)=>(combined(b)||0)-(combined(a)||0));
+  if(sort==='distance') list.sort((a,b)=>a.min-b.min);
+  if(sort==='price')    list.sort((a,b)=>a.price-b.price);
+  if(sort==='name')     list.sort((a,b)=>a.name.localeCompare(b.name));
+
+  if(!list.length){ document.getElementById('browse-grid').innerHTML=
+    `<div class="empty-state"><div class="icon">🔍</div><p>No apartments match those filters.</p></div>`; return; }
+
+  const mi=(v,l)=>{const c=v===true?'amen-yes':v===false?'amen-no':'amen-unk';return`<span class="mini-amen ${c}">${v===true?'✓':v===false?'✗':'?'} ${l}</span>`;};
+
+  document.getElementById('browse-grid').innerHTML=list.map(a=>{
+    const k=ratings.kyle[a.id], n=ratings.noelle[a.id];
+    const cs=combined(a); const my=ratings[currentUser][a.id];
+    return`<div class="browse-card">
+      <div class="browse-hero" style="background:${grad(a.id-1)}">
+        <div class="browse-name">${a.name}</div>
+        <div class="browse-sub">${a.ps}/mo · ${a.sqft}</div>
+      </div>
+      <div class="browse-body">
+        <div class="mini-amens">${mi(a.pool,'Pool')}${mi(a.ht,'Hot Tub')}${mi(a.gym,'Gym')}</div>
+        <div class="browse-commute" style="color:${distCol(a.min)}">🚗 ${a.mi} mi · ${a.min} min to U of U</div>
+        <div class="browse-amenities">${a.amen}</div>
+        ${a.notes?`<div class="card-note" style="margin-bottom:7px;font-size:.69rem">⚠️ ${a.notes}</div>`:''}
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:7px;font-size:.7rem;color:var(--sub);font-weight:700">
+          <span>👤 ${k?rShort(k):'—'}</span><span>👤 ${n?rShort(n):'—'}</span>
+          ${cs?`<span style="margin-left:auto;font-weight:900">⭐ ${cs.toFixed(1)}</span>`:''}
+        </div>
+        <div class="browse-rating-row">
+          ${[1,2,3,4].map(v=>`<button class="mini-rate-btn${my===v?' r'+v:''}" onclick="miniRate(${a.id},${v})">${rShort(v)}</button>`).join('')}
+          <a href="${a.web}" target="_blank" class="link-mini">🔗</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function miniRate(id,s){ ratings[currentUser][id]=s; save(); renderBrowse(); updateProgress(); }
+
+// ════════════════════════
+// INIT
+// ════════════════════════
+setUser(currentUser);
+renderRate();
+</script>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- CREATURES + AUDIO                           -->
+<!-- ════════════════════════════════════════════ -->
+<script>
+// ── Audio ──────────────────────────────────────
+let AC = null, soundOn = true;
+
+// ── Vaporwave BGM ──────────────────────────────
+// Chord progression: Cmaj7 → Fmaj7 → Am7 → Em7  (I-IV-VI-III in C, all natural/diatonic)
+// Each note array: [bass, ...pad voices]
+const VAPOR_CHORDS = [
+  [65.41,  164.81, 196.00, 246.94, 329.63, 392.00], // Cmaj7 (C E G B E G)
+  [87.31,  220.00, 261.63, 329.63, 440.00, 523.25], // Fmaj7 (F A C E A C)
+  [110.00, 261.63, 329.63, 392.00, 523.25, 659.25], // Am7   (A C E G C E)
+  [82.41,  196.00, 246.94, 293.66, 392.00, 493.88], // Em7   (E G B D G B)
+];
+const CHORD_DUR = 4.2;  // seconds per chord (slow and dreamy)
+
+let vapReverb = null, vapMaster = null;
+let vapTick   = null,  vapNext  = 0;
+let vapNodes  = [];
+
+function buildReverb() {
+  const rate = AC.sampleRate, len = Math.ceil(rate * 3.2);
+  const buf  = AC.createBuffer(2, len, rate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < len; i++)
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.3);
+  }
+  const conv = AC.createConvolver(); conv.buffer = buf; return conv;
+}
+
+function scheduleChord(freqs, when) {
+  freqs.forEach((freq, i) => {
+    // bass note: pure sine, higher notes: triangle / detuned sine blend
+    const types   = i === 0 ? ['sine'] : ['triangle', 'sine', 'sine'];
+    const detunes = i === 0 ? [0]      : [-6, 0, 6];
+    const baseVol = i === 0 ? 0.065 : Math.max(0.015, 0.048 - i * 0.006);
+
+    types.forEach((type, j) => {
+      const osc  = AC.createOscillator();
+      const g    = AC.createGain();
+      osc.type   = type;
+      osc.frequency.value = freq;
+      osc.detune.value    = detunes[j] || 0;
+
+      const atk = 1.4, rel = 1.6;
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(baseVol, when + atk);
+      g.gain.setValueAtTime(baseVol, when + CHORD_DUR - rel);
+      g.gain.linearRampToValueAtTime(0, when + CHORD_DUR - 0.2);
+
+      // subtle vibrato via LFO
+      const lfo  = AC.createOscillator();
+      const lfoG = AC.createGain();
+      lfo.frequency.value = 4.5 + Math.random() * 1.5;
+      lfoG.gain.value     = 1.5;
+      lfo.connect(lfoG); lfoG.connect(osc.frequency);
+      lfo.start(when); lfo.stop(when + CHORD_DUR - 0.1);
+
+      osc.connect(g); g.connect(vapReverb);
+      osc.start(when); osc.stop(when + CHORD_DUR - 0.05);
+      vapNodes.push(osc, lfo);
+    });
+  });
+}
+
+function initVapor() {
+  if (vapReverb) return;
+  vapReverb = buildReverb();
+  vapMaster = AC.createGain(); vapMaster.gain.value = 0;
+  vapReverb.connect(vapMaster); vapMaster.connect(AC.destination);
+}
+
+function startAmbient() {
+  if (!soundOn || !AC || vapTick) return;
+  resumeAC(); initVapor();
+  vapMaster.gain.cancelScheduledValues(AC.currentTime);
+  vapMaster.gain.linearRampToValueAtTime(1, AC.currentTime + 2.5);
+  if (vapNext < AC.currentTime) vapNext = AC.currentTime + 0.05;
+
+  function tick() {
+    if (!soundOn) return;
+    resumeAC();
+    while (vapNext < AC.currentTime + CHORD_DUR + 0.6) {
+      const idx = Math.floor(vapNext / CHORD_DUR) % VAPOR_CHORDS.length;
+      scheduleChord(VAPOR_CHORDS[idx], vapNext);
+      scheduleMelodyForChord(idx, vapNext);
+      schedulePercussion(vapNext);
+      vapNext += CHORD_DUR;
+    }
+    // prune stopped nodes
+    if (vapNodes.length > 120) {
+      vapNodes = vapNodes.filter(n => { try { return n.playbackState !== 3; } catch(e) { return false; } });
+    }
+    vapTick = setTimeout(tick, 300);
+  }
+  tick();
+}
+
+function stopAmbient() {
+  clearTimeout(vapTick); vapTick = null;
+  if (vapMaster) {
+    vapMaster.gain.cancelScheduledValues(AC.currentTime);
+    vapMaster.gain.linearRampToValueAtTime(0, AC.currentTime + 2);
+    setTimeout(() => { vapNodes.forEach(n => { try { n.stop(); } catch(e) {} }); vapNodes = []; }, 2500);
+  }
+}
+
+function initAC() {
+  if (AC) return;
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+}
+function resumeAC() { if (AC && AC.state === 'suspended') AC.resume(); }
+
+function playBubblePop(size) {
+  if (!soundOn || !AC) return;
+  resumeAC();
+  const freq = 900 - size * 18;
+  const vol  = 0.03 + size * 0.003;
+  const osc  = AC.createOscillator(); const gain = AC.createGain();
+  osc.type   = 'sine';
+  osc.frequency.setValueAtTime(freq, AC.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.35, AC.currentTime + 0.13);
+  gain.gain.setValueAtTime(vol, AC.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + 0.18);
+  osc.connect(gain); gain.connect(AC.destination);
+  osc.start(); osc.stop(AC.currentTime + 0.18);
+}
+
+function playFishBlub() {
+  if (!soundOn || !AC) return;
+  resumeAC();
+  const base = 180 + Math.random() * 120;
+  [1, 1.6, 2.1].forEach((ratio, i) => {
+    const osc  = AC.createOscillator(); const gain = AC.createGain();
+    osc.type   = 'sine';
+    osc.frequency.setValueAtTime(base * ratio, AC.currentTime + i * 0.04);
+    osc.frequency.exponentialRampToValueAtTime(base * ratio * 0.28, AC.currentTime + i * 0.04 + 0.32);
+    gain.gain.setValueAtTime(0.022, AC.currentTime + i * 0.04);   // quieter 🐟
+    gain.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + i * 0.04 + 0.38);
+    osc.connect(gain); gain.connect(AC.destination);
+    osc.start(AC.currentTime + i * 0.04);
+    osc.stop(AC.currentTime + i * 0.04 + 0.4);
+  });
+}
+
+// ── Percussion ──────────────────────────────────
+// 8 evenly-spaced beats per 4.2s chord ≈ 57 BPM quarter-note feel
+const BEAT_DUR = 4.2 / 8;  // 0.525s
+
+function playKick(when) {
+  if (!AC) return;
+  const osc = AC.createOscillator(), g = AC.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(190, when);
+  osc.frequency.exponentialRampToValueAtTime(48, when + 0.055);
+  osc.frequency.exponentialRampToValueAtTime(28, when + 0.42);
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(0.42, when + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.48);
+  osc.connect(g); g.connect(AC.destination);
+  osc.start(when); osc.stop(when + 0.52);
+  // sub rumble into reverb for space
+  const sub = AC.createOscillator(), sg = AC.createGain();
+  sub.type = 'sine'; sub.frequency.value = 45;
+  sg.gain.setValueAtTime(0.055, when);
+  sg.gain.exponentialRampToValueAtTime(0.0001, when + 0.3);
+  sub.connect(sg); sg.connect(vapReverb);
+  sub.start(when); sub.stop(when + 0.35);
+  vapNodes.push(osc, sub);
+}
+
+function playSnare(when) {
+  if (!AC) return;
+  const rate = AC.sampleRate;
+  const buf  = AC.createBuffer(1, Math.ceil(rate * 0.22), rate);
+  const d    = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = AC.createBufferSource(); src.buffer = buf;
+  const bp  = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.55;
+  const g   = AC.createGain();
+  g.gain.setValueAtTime(0.22, when);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.19);
+  src.connect(bp); bp.connect(g); g.connect(AC.destination);
+  // reverb send for that floaty vaporwave snare
+  const rg = AC.createGain(); rg.gain.value = 0.22;
+  bp.connect(rg); rg.connect(vapReverb);
+  src.start(when); src.stop(when + 0.25);
+  // body tone
+  const body = AC.createOscillator(), bg = AC.createGain();
+  body.type = 'sine'; body.frequency.value = 195;
+  bg.gain.setValueAtTime(0.18, when);
+  bg.gain.exponentialRampToValueAtTime(0.0001, when + 0.07);
+  body.connect(bg); bg.connect(AC.destination);
+  body.start(when); body.stop(when + 0.09);
+  vapNodes.push(body);
+}
+
+function playHiHat(when, vol, open) {
+  if (!AC) return;
+  const dur  = open ? 0.18 : 0.038;
+  const rate = AC.sampleRate;
+  const buf  = AC.createBuffer(1, Math.ceil(rate * (dur + 0.02)), rate);
+  const d    = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = AC.createBufferSource(); src.buffer = buf;
+  const hp  = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 9500;
+  const g   = AC.createGain();
+  g.gain.setValueAtTime(vol, when);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  src.connect(hp); hp.connect(g); g.connect(AC.destination);
+  src.start(when); src.stop(when + dur + 0.02);
+}
+
+function schedulePercussion(phraseStart) {
+  if (!AC) return;
+  // Pattern over 8 beats (K=kick, S=snare, H=closed hat, O=open hat):
+  // Beat: 0    1    2    3    4    5    6    7
+  //  K:   X              X
+  //  S:        X              X
+  //  H:   X    X    X    X    X    X    X    X
+  //  O:                            X
+  for (let b = 0; b < 8; b++) {
+    const t = phraseStart + b * BEAT_DUR + (Math.random() - 0.5) * 0.009;
+    if (t <= AC.currentTime) continue;
+    if (b === 0 || b === 3) playKick(t);
+    if (b === 1 || b === 5) playSnare(t);
+    const open = (b === 4);
+    const hvol = open ? 0.05 : (b % 2 === 0 ? 0.036 : 0.024);
+    playHiHat(t, hvol, open);
+  }
+}
+
+// ── Melody lead ─────────────────────────────────
+// Repeating motif: rising 4th → rising 3rd per chord (earworm hook)
+// Each row: [beat1, beat2, beat3, pickupToNext]
+const MELODY_MOTIF = [
+  [523.25,  783.99, 659.25,  523.25], // Cmaj7: C5→G5→E5  / pickup C5
+  [523.25,  698.46, 659.25,  659.25], // Fmaj7: C5→F5→E5  / pickup E5
+  [659.25,  523.25, 783.99,  493.88], // Am7:   E5→C5→G5  / pickup B4
+  [493.88,  659.25, 587.33,  659.25], // Em7:   B4→E5→D5  / pickup E5
+];
+
+function scheduleMelodyNote(freq, when, vol) {
+  if (!AC || !vapReverb) return;
+  const osc = AC.createOscillator(), g = AC.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  osc.detune.value = (Math.random() - 0.5) * 6;
+  const atk = 0.08, hold = 0.35, rel = 0.65;
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(vol || 0.058, when + atk);
+  g.gain.setValueAtTime(vol || 0.058, when + atk + hold);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + atk + hold + rel);
+  osc.connect(g); g.connect(vapReverb);
+  osc.start(when); osc.stop(when + atk + hold + rel + 0.1);
+  vapNodes.push(osc);
+}
+
+function scheduleMelodyForChord(chordIdx, chordStart) {
+  if (!AC) return;
+  const motif = MELODY_MOTIF[chordIdx % 4];
+  // Three main hook notes with tight, consistent rhythm
+  [0.28, 1.52, 2.74].forEach((offset, i) => {
+    const freq = motif[i];
+    const when = chordStart + offset + (Math.random()-0.5)*0.10;
+    if (when > AC.currentTime) scheduleMelodyNote(freq, when);
+  });
+  // Pickup note into next chord (creates forward pull = earworm)
+  const pickupWhen = chordStart + CHORD_DUR - 0.32 + (Math.random()-0.5)*0.08;
+  if (pickupWhen > AC.currentTime) scheduleMelodyNote(motif[3], pickupWhen, 0.032);
+}
+
+function playRateChime(score) {
+  if (!soundOn || !AC) return;
+  resumeAC();
+  const chords = {
+    4: [523.25, 659.25, 783.99, 1046.5],
+    3: [392, 493.88, 587.33],
+    2: [349.23, 329.63],
+    1: [261.63, 220, 174.61],
+  };
+  (chords[score] || [400]).forEach((freq, i) => {
+    setTimeout(() => {
+      const osc = AC.createOscillator(); const gain = AC.createGain();
+      osc.type  = score >= 3 ? 'sine' : 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(score >= 3 ? 0.12 : 0.08, AC.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + (score >= 3 ? 0.4 : 0.25));
+      osc.connect(gain); gain.connect(AC.destination);
+      osc.start(); osc.stop(AC.currentTime + 0.5);
+    }, i * (score >= 3 ? 70 : 90));
+  });
+}
+
+function toggleSound() {
+  initAC();
+  soundOn = !soundOn;
+  const btn = document.getElementById('sound-btn');
+  btn.classList.toggle('active', soundOn);
+  if (soundOn) { resumeAC(); startAmbient(); showToast('🔊 Sounds on!'); }
+  else          { stopAmbient();             showToast('🔇 Sounds off'); }
+}
+
+// Patch rate() to play chimes
+const _origRate = rate;
+window.rate = function(id, score) {
+  playRateChime(score);
+  _origRate(id, score);
+};
+
+// ── Bubbles ─────────────────────────────────────
+function spawnBubbles() {
+  const layer = document.getElementById('creatures');
+  for (let i = 0; i < 22; i++) {
+    const size  = 5 + Math.random() * 18;
+    const left  = 2  + Math.random() * 96;
+    const dur   = 5  + Math.random() * 9;
+    const delay = -(Math.random() * dur);
+    const drift = (Math.random() - 0.5) * 55;
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.cssText = `left:${left}%;width:${size}px;height:${size}px;`
+      + `--dur:${dur.toFixed(1)}s;--delay:${delay.toFixed(1)}s;--drift:${drift.toFixed(0)}px;`;
+    // Pop sound on each loop
+    b.addEventListener('animationiteration', () => {
+      if (Math.random() < 0.35) playBubblePop(size);
+    });
+    layer.appendChild(b);
+  }
+}
+
+// ── Fish ────────────────────────────────────────
+const FISH_NAMES  = ['Gerald','Bubbles','Nemo','Splash','Gill','Coral','Dory','Flounder','Sebastian','Poseidon','Neptune','Shimmer','Glitter','Blinky','Finley','Zigzag','Dazzle','Prism','Waverly','Cosmo'];
+const FISH_EMOJIS = ['💕','✨','🫧','💫','❤️','🌟','⭐','🩷','💙','🌊'];
+
+function spawnParticles(x, y) {
+  for (let i = 0; i < 6; i++) {
+    const el = document.createElement('div');
+    el.className = 'fish-particle';
+    el.textContent = FISH_EMOJIS[Math.floor(Math.random() * FISH_EMOJIS.length)];
+    const angle = (Math.random() * 240 - 120) * Math.PI / 180;
+    const dist  = 40 + Math.random() * 60;
+    const px    = Math.sin(angle) * dist;
+    const py    = -Math.abs(Math.cos(angle)) * dist - 20;
+    const pr    = (Math.random() - 0.5) * 160;
+    const pr2   = pr + (Math.random() - 0.5) * 80;
+    el.style.cssText = `left:${x.toFixed(0)}px;top:${y.toFixed(0)}px;`
+      + `--px:${px.toFixed(0)}px;--py:${py.toFixed(0)}px;`
+      + `--pr:${pr.toFixed(0)}deg;--pr2:${pr2.toFixed(0)}deg;`
+      + `animation-delay:${(i * 0.06).toFixed(2)}s;`;
+    document.body.appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1500);
+  }
+}
+
+const FISH_PALETTES = [
+  // clownfish
+  {b:'#ff7043',d:'#bf360c',l:'rgba(255,204,188,.55)',s:'rgba(255,255,255,.65)'},
+  // blue tang
+  {b:'#1e88e5',d:'#0d47a1',l:'rgba(187,222,251,.5)', s:'rgba(255,214,0,.7)'},
+  // tropical green
+  {b:'#43a047',d:'#1b5e20',l:'rgba(200,230,201,.5)', s:'rgba(255,235,59,.7)'},
+  // purple angel
+  {b:'#8e24aa',d:'#4a148c',l:'rgba(225,190,231,.5)', s:'rgba(244,143,177,.7)'},
+  // yellow butterfly
+  {b:'#fdd835',d:'#e65100',l:'rgba(255,249,196,.5)', s:'rgba(255,111,0,.65)'},
+  // rose/pink
+  {b:'#e91e63',d:'#880e4f',l:'rgba(252,228,236,.5)', s:'rgba(255,255,255,.6)'},
+  // teal
+  {b:'#00897b',d:'#004d40',l:'rgba(178,223,219,.5)', s:'rgba(128,222,234,.7)'},
+];
+
+function makeFishSVG(p, w) {
+  const h = Math.round(w * 0.55);
+  return `<svg width="${w}" height="${h}" viewBox="0 0 64 35" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="11,17.5 0,5 0,30" fill="${p.d}" opacity=".88"/>
+    <polygon points="11,17.5 3,11 3,24" fill="${p.b}" opacity=".75"/>
+    <ellipse cx="34" cy="17.5" rx="22" ry="13" fill="${p.b}"/>
+    <ellipse cx="35" cy="19.5" rx="17" ry="8" fill="${p.l}"/>
+    <ellipse cx="27" cy="8"   rx="7" ry="4" fill="${p.d}" opacity=".72" transform="rotate(-18,27,8)"/>
+    <ellipse cx="23" cy="29"  rx="5.5" ry="2.8" fill="${p.d}" opacity=".6" transform="rotate(12,23,29)"/>
+    <rect x="31" y="14.5" width="5" height="6" rx="2.5" fill="${p.s}" opacity=".7"/>
+    <ellipse cx="32" cy="11" rx="4" ry="2.5" fill="${p.s}" opacity=".35"/>
+    <circle cx="50" cy="14" r="3.8" fill="white"/>
+    <circle cx="51" cy="14" r="2.2" fill="#1a1a3e"/>
+    <circle cx="51.8" cy="12.5" r=".75" fill="white"/>
+    <path d="M58,16 Q62,18.5 58,21" stroke="${p.d}" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function spawnFish() {
+  const layer = document.getElementById('creatures');
+  const count = 7;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => addFish(layer), i * 1800 + Math.random() * 800);
+  }
+}
+
+function addFish(layer) {
+  const p        = FISH_PALETTES[Math.floor(Math.random() * FISH_PALETTES.length)];
+  const size     = 34 + Math.random() * 38;
+  const goRight  = Math.random() > 0.38;
+  const topPct   = 8  + Math.random() * 74;
+  const dur      = 11 + Math.random() * 13;
+  const delay    = -(Math.random() * dur);
+  const y1 = (Math.random()-0.5)*18, y2=(Math.random()-0.5)*18, y3=(Math.random()-0.5)*14;
+  const fishName = FISH_NAMES[Math.floor(Math.random() * FISH_NAMES.length)];
+
+  const lane = document.createElement('div');
+  lane.className = 'fish-lane' + (goRight ? '' : ' swim-left');
+  lane.style.cssText = `top:${topPct.toFixed(1)}%;`
+    + `--dur:${dur.toFixed(1)}s;--delay:${delay.toFixed(1)}s;`
+    + `--y1:${y1.toFixed(1)}px;--y2:${y2.toFixed(1)}px;--y3:${y3.toFixed(1)}px;`;
+
+  const flip = document.createElement('div');
+  if (!goRight) flip.style.transform = 'scaleX(-1)';
+  flip.style.display = 'inline-block';
+
+  const body = document.createElement('div');
+  body.className = 'fish-body';
+  body.title = fishName;
+  body.innerHTML = makeFishSVG(p, Math.round(size));
+
+  body.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (body.classList.contains('fish-spin')) return;
+    body.classList.add('fish-spin');
+    playFishBlub();
+    const rect = body.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top  + rect.height / 2;
+    spawnParticles(cx, cy);
+    const tag = document.createElement('div');
+    tag.className = 'fish-name-tag';
+    tag.textContent = fishName + '!';
+    tag.style.cssText = `left:${cx.toFixed(0)}px;top:${(cy - 42).toFixed(0)}px;`;
+    document.body.appendChild(tag);
+    setTimeout(() => body.classList.remove('fish-spin'), 700);
+    setTimeout(() => { if (tag.parentNode) tag.parentNode.removeChild(tag); }, 2200);
+  });
+
+  flip.appendChild(body);
+  lane.appendChild(flip);
+  layer.appendChild(lane);
+
+  lane.addEventListener('animationiteration', () => {
+    if (Math.random() < 0.55) playFishBlub();
+  });
+}
+
+// ── Sparkles ────────────────────────────────────
+function spawnSparkles() {
+  const layer = document.getElementById('creatures');
+  for (let i = 0; i < 14; i++) {
+    const sp = document.createElement('div');
+    sp.className = 'sparkle';
+    const sz    = 6 + Math.random() * 10;
+    const dur   = 2.5 + Math.random() * 4;
+    const delay = -(Math.random() * dur);
+    sp.style.cssText = `left:${(Math.random()*96+2).toFixed(1)}%;`
+      + `top:${(Math.random()*88+4).toFixed(1)}%;`
+      + `--sz:${sz.toFixed(0)}px;--sd:${dur.toFixed(1)}s;--sdelay:${delay.toFixed(1)}s;`;
+    layer.appendChild(sp);
+  }
+}
+
+// ── Underwater Cityscape ────────────────────────
+function buildCityscape() {
+  const container = document.getElementById('city-scroll');
+  if (!container) return;
+  const W = 2800, H = 260;
+  const NEON = ['#00e5ff','#ff4081','#ce93d8','#69f0ae','#fff59d','#ff7043','#80deea','#f48fb1'];
+  function rnd(a,b) { return a + Math.random()*(b-a); }
+  function ri(a,b)  { return Math.floor(rnd(a,b)); }
+
+  function genLayer(cfg) {
+    let s='', x=0;
+    while (x < W+80) {
+      const bw=ri(cfg.wMin,cfg.wMax), bh=ri(cfg.hMin,cfg.hMax), by=H-bh+cfg.yOff;
+      s += `<rect x="${x}" y="${by}" width="${bw}" height="${bh}" fill="${cfg.col}" opacity="${cfg.alpha}"/>`;
+      if (cfg.wSize) {
+        const nc=NEON[ri(0,NEON.length)], ww=cfg.wSize, wh=cfg.wSize+2, gx=3, gy=4, pad=6;
+        const cols=Math.max(1,Math.floor((bw-pad*2)/(ww+gx)));
+        const rows=Math.max(1,Math.floor((bh-14)/(wh+gy)));
+        const sx=x+Math.floor((bw-(cols*(ww+gx)-gx))/2);
+        for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+          if (Math.random()>0.55) continue;
+          const wx=sx+c*(ww+gx), wy=by+10+r*(wh+gy);
+          if (wy+wh>H-5) continue;
+          const wc=Math.random()>0.72?NEON[ri(0,NEON.length)]:nc;
+          s += `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" fill="${wc}" opacity="${rnd(0.28,0.82).toFixed(2)}" rx="0.5"/>`;
+        }
+        if (Math.random()>0.58) {
+          const ax=(x+bw/2+rnd(-8,8)).toFixed(0);
+          s += `<line x1="${ax}" y1="${by}" x2="${ax}" y2="${by-15}" stroke="#1e3d5c" stroke-width="1.5" opacity="0.7"/>`;
+          s += `<circle cx="${ax}" cy="${by-17}" r="1.5" fill="#ff5555" opacity="0.65"><animate attributeName="opacity" values="0.65;0.1;0.65" dur="${rnd(1.4,2.8).toFixed(1)}s" repeatCount="indefinite"/></circle>`;
+        }
+      } else {
+        for (let r=0;r<ri(2,5);r++) for (let c=0;c<ri(2,4);c++) {
+          if (Math.random()>0.22) continue;
+          const wx=x+7+c*14, wy=by+10+r*16;
+          if (wx+3>x+bw-6||wy+4>H) continue;
+          s += `<rect x="${wx}" y="${wy}" width="3" height="4" fill="#1a6080" opacity="0.35"/>`;
+        }
+      }
+      x += bw+ri(-8,4);
+    }
+    return s;
+  }
+
+  const farS  = genLayer({hMin:90, hMax:235,wMin:60,wMax:150,yOff:36,col:'#041226',alpha:0.5});
+  const midS  = genLayer({hMin:70, hMax:192,wMin:48,wMax:120,yOff:17,col:'#091828',alpha:0.75,wSize:4});
+  const nearS = genLayer({hMin:50, hMax:160,wMin:38,wMax:98, yOff:0, col:'#0e2038',alpha:0.92,wSize:5});
+
+  let seaweed='';
+  for (let i=0;i<18;i++) {
+    const bx=rnd(20,W-20), swH=rnd(22,70);
+    const c1x=bx+rnd(-16,16), c2x=bx+rnd(-12,12);
+    const col=Math.random()>.45?'#1a5c40':'#0d3d28';
+    const sw=rnd(1.5,3.5).toFixed(1), dur=rnd(2.5,5).toFixed(1), sway=rnd(3,9).toFixed(1);
+    seaweed += `<path d="M${bx.toFixed(0)},${H} Q${c1x.toFixed(0)},${(H-swH*.55).toFixed(0)} ${c2x.toFixed(0)},${(H-swH).toFixed(0)}" stroke="${col}" stroke-width="${sw}" fill="none" opacity="0.6"><animateTransform attributeName="transform" type="translate" values="0,0;${sway},0;0,0;-${sway},0;0,0" dur="${dur}s" repeatCount="indefinite"/></path>`;
+  }
+
+  // Two identical SVGs for seamless loop
+  ['ca','cb'].forEach(pfx => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('width',W); svg.setAttribute('height',H);
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    svg.style.cssText = 'flex-shrink:0;display:block;';
+    svg.innerHTML = `<defs>
+      <linearGradient id="${pfx}bg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#020c1b" stop-opacity="0"/>
+        <stop offset="60%"  stop-color="#020c1b" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#020c1b" stop-opacity="0.55"/>
+      </linearGradient>
+      <filter id="${pfx}ff"><feGaussianBlur stdDeviation="1.2"/></filter>
+    </defs>
+    <rect width="${W}" height="${H}" fill="url(#${pfx}bg)"/>
+    <g filter="url(#${pfx}ff)">${farS}</g>
+    <g>${midS}</g>
+    <g>${nearS}</g>
+    ${seaweed}
+    <rect y="${H-10}" width="${W}" height="10" fill="#020c1b" opacity="0.75"/>`;
+    container.appendChild(svg);
+  });
+}
+
+// ── Octopus ─────────────────────────────────────
+const OCTO_PALETTES = [
+  {b:'#ff7043',d:'#bf360c',l:'rgba(255,204,188,.5)',s:'rgba(255,255,255,.6)'},
+  {b:'#8e24aa',d:'#4a148c',l:'rgba(225,190,231,.5)',s:'rgba(255,255,255,.5)'},
+  {b:'#1565c0',d:'#0d47a1',l:'rgba(187,222,251,.5)',s:'rgba(255,255,255,.55)'},
+  {b:'#ec407a',d:'#880e4f',l:'rgba(252,228,236,.5)',s:'rgba(255,255,255,.5)'},
+  {b:'#00897b',d:'#004d40',l:'rgba(178,223,219,.5)',s:'rgba(255,255,255,.5)'},
+];
+const JELLY_PALETTES = [
+  {b:'rgba(244,143,177,.72)',d:'#f48fb1',l:'rgba(255,220,235,.45)',s:'rgba(255,255,255,.65)'},
+  {b:'rgba(100,181,246,.68)',d:'#64b5f6',l:'rgba(200,232,255,.4)', s:'rgba(255,255,255,.65)'},
+  {b:'rgba(186,104,200,.70)',d:'#ba68c8',l:'rgba(230,200,240,.4)', s:'rgba(255,255,255,.6)'},
+  {b:'rgba(77,208,225,.68)', d:'#4dd0e1',l:'rgba(200,245,250,.38)',s:'rgba(255,255,255,.65)'},
+  {b:'rgba(240,240,255,.62)',d:'rgba(180,190,255,.88)',l:'rgba(255,255,255,.32)',s:'rgba(255,255,255,.75)'},
+];
+const OCTO_NAMES  = ['Octavia','Inky','Squish','Professor','Maestro','Wobbles','Cleo','Tentacles','Puddles','Gloop'];
+const JELLY_NAMES = ['Wisp','Glimmer','Float','Gossamer','Lumina','Opal','Drift','Nimbus','Haze','Veil'];
+
+function makeOctopusSVG(p, w) {
+  const h = Math.round(w * 0.9);
+  // All coords in 100×90 viewBox
+  const TENTS = [
+    [22,50, 8,60,  5,70,  12,80],
+    [28,52, 18,63, 16,73, 20,82],
+    [34,54, 27,66, 26,76, 29,84],
+    [40,55, 36,68, 36,78, 37,86],
+    [47,55, 47,68, 47,78, 47,86],
+    [53,54, 57,67, 58,77, 55,84],
+    [59,52, 66,64, 68,74, 64,82],
+    [65,50, 78,60, 82,70, 74,79],
+  ];
+  const tSVG = TENTS.map(([sx,sy,c1x,c1y,c2x,c2y,ex,ey], i) => {
+    const sw = i%2 ? '2.5,1' : '-2.5,-1', rw = i%2 ? '-2.5,-1' : '2.5,1';
+    return `<path d="M${sx},${sy} C${c1x},${c1y} ${c2x},${c2y} ${ex},${ey}" stroke="${p.d}" stroke-width="3.5" fill="none" stroke-linecap="round"><animateTransform attributeName="transform" type="translate" values="0,0;${sw};0,0;${rw};0,0" dur="${(2.0+i*0.2).toFixed(1)}s" repeatCount="indefinite"/></path>`;
+  }).join('');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg">
+    ${tSVG}
+    <ellipse cx="47" cy="30" rx="25" ry="22" fill="${p.b}"/>
+    <ellipse cx="47" cy="34" rx="18" ry="15" fill="${p.l}" opacity="0.45"/>
+    <circle cx="36"  cy="26" r="7"   fill="white"/>
+    <circle cx="37.5" cy="26" r="4.5" fill="#1a1a3e"/>
+    <circle cx="38.5" cy="24.5" r="1.8" fill="white"/>
+    <circle cx="57"  cy="26" r="7"   fill="white"/>
+    <circle cx="58.5" cy="26" r="4.5" fill="#1a1a3e"/>
+    <circle cx="59.5" cy="24.5" r="1.8" fill="white"/>
+    <path d="M37,40 Q47,44 57,40" stroke="${p.d}" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="38" cy="15" rx="11" ry="6" fill="rgba(255,255,255,0.22)" transform="rotate(-15,47,30)"/>
+  </svg>`;
+}
+
+function makeJellyfishSVG(p, w) {
+  const h = Math.round(w * 1.2);
+  const TX = [14,21,28,35,45,52,59,66];
+  const tSVG = TX.map((tx, i) => {
+    const len = 40 + (i%3)*9, bend = i%2?4:-4, dur = (1.8+i*0.28).toFixed(1);
+    return `<path d="M${tx},40 Q${tx+bend},${52+len*.18} ${tx+(i%2?2:-2)},${40+len}" stroke="${p.d}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.68"><animateTransform attributeName="transform" type="translate" values="0,0;${bend*.9},0;0,0;${-bend*.9},0;0,0" dur="${dur}s" repeatCount="indefinite"/></path>`;
+  }).join('');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 80 95" xmlns="http://www.w3.org/2000/svg">
+    ${tSVG}
+    <path d="M40,8 Q40,28 40,40" stroke="${p.l}" stroke-width="1.5" fill="none" opacity="0.5"/>
+    <path d="M26,13 Q33,26 40,40" stroke="${p.l}" stroke-width="1.2" fill="none" opacity="0.4"/>
+    <path d="M54,13 Q47,26 40,40" stroke="${p.l}" stroke-width="1.2" fill="none" opacity="0.4"/>
+    <path d="M15,25 Q27,32 40,40" stroke="${p.l}" stroke-width="1.0" fill="none" opacity="0.3"/>
+    <path d="M65,25 Q53,32 40,40" stroke="${p.l}" stroke-width="1.0" fill="none" opacity="0.3"/>
+    <path d="M8,38 Q8,5 40,5 Q72,5 72,38 Q60,46 40,48 Q20,46 8,38 Z" fill="${p.b}"/>
+    <path d="M18,35 Q18,14 40,14 Q62,14 62,35 Q52,42 40,44 Q28,42 18,35 Z" fill="${p.l}" opacity="0.38"/>
+    <ellipse cx="27" cy="18" rx="9" ry="5.5" fill="rgba(255,255,255,0.28)" transform="rotate(-22,40,25)"/>
+  </svg>`;
+}
+
+function makePufferfishSVG(p, w) {
+  const h = Math.round(w * 0.82);
+  const spikes = Array.from({length:14},(_,i) => {
+    const a = i*(360/14)*Math.PI/180;
+    return `<line x1="${(38+Math.cos(a)*20).toFixed(1)}" y1="${(35+Math.sin(a)*20).toFixed(1)}" x2="${(38+Math.cos(a)*28).toFixed(1)}" y2="${(35+Math.sin(a)*28).toFixed(1)}" stroke="${p.d}" stroke-width="2.5" stroke-linecap="round"/>`;
+  }).join('');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 85 70" xmlns="http://www.w3.org/2000/svg">
+    ${spikes}
+    <circle cx="38" cy="35" r="20" fill="${p.b}"/>
+    <circle cx="38" cy="38" r="15" fill="${p.l}" opacity="0.42"/>
+    <polygon points="58,27 72,18 72,50 58,43" fill="${p.d}" opacity="0.82"/>
+    <ellipse cx="22" cy="28" rx="8" ry="4.5" fill="${p.d}" opacity="0.75" transform="rotate(-28,22,28)"/>
+    <circle cx="46" cy="28" r="8.5" fill="white"/>
+    <circle cx="47.5" cy="28" r="5.5" fill="#1a1a3e"/>
+    <circle cx="48.5" cy="26.5" r="2" fill="white"/>
+    <ellipse cx="29" cy="24" rx="8" ry="4.5" fill="rgba(255,255,255,0.28)" transform="rotate(-15,38,35)"/>
+  </svg>`;
+}
+
+function playOctopusBlub() {
+  if (!soundOn || !AC) return; resumeAC();
+  const base = 75 + Math.random() * 45;
+  [1, 1.5, 2.0].forEach((r, i) => {
+    const osc = AC.createOscillator(), g = AC.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(base*r, AC.currentTime+i*0.055);
+    osc.frequency.exponentialRampToValueAtTime(base*r*0.24, AC.currentTime+i*0.055+0.42);
+    g.gain.setValueAtTime(0.025, AC.currentTime+i*0.055);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+i*0.055+0.46);
+    osc.connect(g); g.connect(AC.destination);
+    osc.start(AC.currentTime+i*0.055); osc.stop(AC.currentTime+i*0.055+0.5);
+  });
+}
+
+function playJellyChime() {
+  if (!soundOn || !AC) return; resumeAC();
+  const CHIME_NOTES = [783.99, 880.00, 987.77, 1046.50, 1174.66, 1318.51]; // G5 A5 B5 C6 D6 E6 (C major)
+  const freq = CHIME_NOTES[Math.floor(Math.random() * CHIME_NOTES.length)];
+  const osc = AC.createOscillator(), g = AC.createGain();
+  osc.type = 'sine'; osc.frequency.value = freq;
+  g.gain.setValueAtTime(0, AC.currentTime);
+  g.gain.linearRampToValueAtTime(0.020, AC.currentTime+0.06);
+  g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+1.0);
+  osc.connect(g); g.connect(AC.destination);
+  if (vapReverb) { const rg=AC.createGain(); rg.gain.value=0.5; g.connect(rg); rg.connect(vapReverb); }
+  osc.start(AC.currentTime); osc.stop(AC.currentTime+1.1);
+}
+
+// Shared interactive creature spawner
+function addCreature(layer, svgFn, palettes, size, durMin, durMax, cls, names, soundFn, loopChance=0.32) {
+  const p       = palettes[Math.floor(Math.random()*palettes.length)];
+  const goRight = Math.random()>0.42;
+  const topPct  = 6+Math.random()*76;
+  const dur     = durMin+Math.random()*(durMax-durMin);
+  const delay   = -(Math.random()*dur);
+  const y1=(Math.random()-0.5)*16, y2=(Math.random()-0.5)*16, y3=(Math.random()-0.5)*12;
+  const name    = names[Math.floor(Math.random()*names.length)];
+
+  const lane = document.createElement('div');
+  lane.className = 'fish-lane'+(goRight?'':' swim-left');
+  lane.style.cssText = `top:${topPct.toFixed(1)}%;--dur:${dur.toFixed(1)}s;--delay:${delay.toFixed(1)}s;`
+    +`--y1:${y1.toFixed(1)}px;--y2:${y2.toFixed(1)}px;--y3:${y3.toFixed(1)}px;`;
+
+  const flip = document.createElement('div');
+  if (!goRight) flip.style.transform = 'scaleX(-1)';
+  flip.style.display = 'inline-block';
+
+  const body = document.createElement('div');
+  body.className = cls; body.title = name;
+  body.innerHTML = svgFn(p, Math.round(size));
+
+  body.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (body.classList.contains('fish-spin')) return;
+    body.classList.add('fish-spin'); soundFn();
+    const rect=body.getBoundingClientRect();
+    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+    spawnParticles(cx, cy);
+    const tag=document.createElement('div'); tag.className='fish-name-tag';
+    tag.textContent=name+'!'; tag.style.cssText=`left:${cx.toFixed(0)}px;top:${(cy-42).toFixed(0)}px;`;
+    document.body.appendChild(tag);
+    setTimeout(()=>body.classList.remove('fish-spin'),700);
+    setTimeout(()=>{ if(tag.parentNode) tag.parentNode.removeChild(tag); },2200);
+  });
+
+  flip.appendChild(body);
+  lane.appendChild(flip); layer.appendChild(lane);
+  lane.addEventListener('animationiteration',()=>{ if(Math.random()<loopChance) soundFn(); });
+}
+
+function spawnOctopi() {
+  const layer = document.getElementById('creatures');
+  for (let i=0;i<3;i++) setTimeout(()=>
+    addCreature(layer, makeOctopusSVG, OCTO_PALETTES, 52+Math.random()*28, 22, 38, 'octo-body', OCTO_NAMES, playOctopusBlub, 0.28),
+    i*2800+Math.random()*1400);
+}
+function spawnJellyfish() {
+  const layer = document.getElementById('creatures');
+  for (let i=0;i<5;i++) setTimeout(()=>
+    addCreature(layer, makeJellyfishSVG, JELLY_PALETTES, 30+Math.random()*22, 20, 34, 'jelly-body', JELLY_NAMES, playJellyChime, 0.18),
+    i*1800+Math.random()*1200);
+}
+function spawnPufferfish() {
+  const layer = document.getElementById('creatures');
+  for (let i=0;i<4;i++) setTimeout(()=>
+    addCreature(layer, makePufferfishSVG, FISH_PALETTES, 26+Math.random()*20, 12, 22, 'puffer-body', FISH_NAMES, playFishBlub, 0.33),
+    i*2200+Math.random()*1000);
+}
+
+// ── Boot ────────────────────────────────────────
+function spawnClouds() {
+  const layer = document.getElementById('clouds-layer');
+  if (!layer) return;
+  [
+    { w:210, h:58,  top:3,  dur:55,  delay:-6,   op:0.38 },
+    { w:130, h:38,  top:8,  dur:40,  delay:-9,   op:0.48 },
+    { w:270, h:70,  top:5,  dur:68,  delay:-24,  op:0.28 },
+    { w:95,  h:30,  top:13, dur:33,  delay:-16,  op:0.52 },
+    { w:175, h:50,  top:10, dur:50,  delay:-30,  op:0.34 },
+    { w:145, h:42,  top:2,  dur:44,  delay:-32,  op:0.44 },
+    { w:230, h:62,  top:17, dur:62,  delay:-52,  op:0.26 },
+    { w:108, h:32,  top:6,  dur:36,  delay:-34,  op:0.50 },
+  ].forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'cloud';
+    d.style.cssText = `width:${c.w}px;height:${c.h}px;top:${c.top}%;opacity:${c.op};--cdur:${c.dur}s;--cdelay:-${c.delay}s;`;
+    layer.appendChild(d);
+  });
+}
+
+buildCityscape();
+spawnClouds();
+spawnBubbles();
+spawnFish();
+spawnOctopi();
+spawnJellyfish();
+spawnPufferfish();
+spawnSparkles();
+
+// Unlock audio on first interaction
+document.getElementById('sound-btn').classList.add('active');
+document.addEventListener('click', () => {
+  if (!AC) { initAC(); if (soundOn) { resumeAC(); startAmbient(); } }
+}, { once: true });
+</script>
+</body>
+</html>
